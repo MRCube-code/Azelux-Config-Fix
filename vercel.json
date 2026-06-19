@@ -1,14 +1,5 @@
 {
   "version": 2,
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "framework": null,
-  "functions": {
-    "api/extract.js": {
-      "maxDuration": 15,
-      "memory": 256
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
