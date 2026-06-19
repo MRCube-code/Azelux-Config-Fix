@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Azelux Config Tool</title>
+  <style>
+    :root {
+      --g:  #39FF14;
+      --dg: #1a3a0a;
+      --bg: #000;
+      --c:  #0d0d0d;
+      --b:  #1c1c1c;
+      --eb: #150000;
+      --ebd:#330000;
+      --et: #ff4444;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg); color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh; padding: 28px 16px 52px;
+    }
+    .wrap { max-width: 680px; margin: 0 auto; }
+
+    /* ── Header ── */
+    .hdr { text-align: center; margin-bottom: 28px; }
+    .hdr-eye   { color: var(--g); font-size: 10px; letter-spacing: 6px; opacity:.7; margin-bottom: 6px; }
+    .hdr-title { font-size: 22px; font-weight: bold; letter-spacing: 2px; }
+    .hdr-sub   { color: #3a3a3a; font-size: 11px; margin-top: 6px; letter-spacing: 1px; }
+
+    /* ── Mode tabs ── */
+    .tabs {
+      display: flex; gap: 6px;
+      background: var(--c); padding: 5px;
+      border-radius: 8px; border: 1px solid var(--b);
+      margin-bottom: 26px;
+    }
+    .tab {
+      flex: 1; padding: 12px 8px; background: transparent;
+      border: 1px solid transparent; border-radius: 6px;
+      cursor: pointer; text-align: center; transition: all .2s; font-family: inherit;
+    }
+    .tab:hover { border-color: #2a2a2a; }
+    .tab.on    { background: var(--dg); border-color: var(--g); }
+    .tab-ico   { font-size: 18px; margin-bottom: 4px; }
+    .tab-lbl   { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: #333; }
+    .tab.on .tab-lbl { color: var(--g); }
+    .tab-sub   { font-size: 9px; color: #222; letter-spacing: 1px; margin-top: 2px; }
+    .tab.on .tab-sub { color: #666; }
+
+    /* ── Panes ── */
+    .pane    { display: none; }
+    .pane.on { display: block; }
+
+    /* ── Drop zone ── */
+    .dz {
+      border: 2px dashed #222; border-radius: 8px; padding: 44px;
+      text-align: center; cursor: pointer; background: var(--c);
+      margin-bottom: 14px; transition: border-color .2s; user-select: none;
+    }
+    .dz:hover, .dz.over { border-color: var(--g); }
+    .dz.has  { padding: 14px; }
+    .dz-ico  { font-size: 36px; margin-bottom: 10px; }
+    .dz-txt  { color: #999; font-size: 13px; }
+    .dz-sub  { color: #333; font-size: 11px; margin-top: 4px; }
+    .dz-chg  { color: #333; font-size: 10px; margin-top: 8px; letter-spacing: 1px; }
+    .dz img  { max-height: 170px; max-width: 100%; border-radius: 4px; display: block; margin: 0 auto; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: block; width: 100%; padding: 14px;
+      border: none; border-radius: 6px; font-size: 13px;
+      font-weight: bold; letter-spacing: 3px; cursor: pointer;
+      font-family: inherit; transition: all .2s; margin-bottom: 12px;
+    }
+    .btn-g { background: var(--g); color: #000; }
+    .btn-g:hover:not(:disabled) { background: #50ff2a; }
+    .btn-g:disabled { background: #111; color: #444; cursor: wait; }
+    .btn-o { background: transparent; color: #333; border: 1px solid #1a1a1a; font-size: 11px; margin-bottom: 0; }
+    .btn-o:hover { border-color: #333; color: #666; }
+    .btn-dl { background: #0a1a0a; color: var(--g); border: 1px solid #1a3a1a; font-size: 12px; letter-spacing: 2px; margin-bottom: 10px; }
+    .btn-dl:hover { background: var(--dg); border-color: var(--g); }
+
+    /* ── Status badge (shown during loading) ── */
+    .status-bar {
+      display: none;
+      align-items: center; gap: 10px;
+      background: #050f05; border: 1px solid #1a2a1a;
+      border-radius: 6px; padding: 10px 14px;
+      font-size: 11px; color: #5a8a5a; margin-bottom: 14px;
+      letter-spacing: 1px;
+    }
+    .status-bar.show { display: flex; }
+    .status-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--g); flex-shrink: 0;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
+
+    /* ── Model badge (shown after success) ── */
+    .model-badge {
+      display: none;
+      font-size: 10px; text-align: right;
+      color: #2a4a2a; letter-spacing: 1px; margin-bottom: 14px;
+    }
+    .model-badge.show { display: block; }
+    .model-badge span { color: #3a6a3a; }
+
+    /* ── Error ── */
+    .err { background: var(--eb); border: 1px solid var(--ebd); border-radius: 6px; padding: 13px; color: var(--et); font-size: 12px; line-height: 1.65; margin-bottom: 14px; }
+    .err.hide { display: none; }
+
+    /* ── Manual inputs ── */
+    .field { margin-bottom: 16px; }
+    .field > label { display: block; color: #555; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; }
+    .frow  { display: flex; align-items: center; gap: 6px; }
+    .fpfx  { color: var(--g); font-size: 12px; white-space: nowrap; }
+    .field input {
+      flex: 1; width: 100%;
+      background: #060606; border: 1px solid var(--b); border-radius: 5px;
+      padding: 10px 12px; color: #fff; font-size: 12px;
+      font-family: inherit; letter-spacing: .5px; outline: none;
+    }
+    .field input:focus { border-color: var(--g); }
+    .fhint { color: #333; font-size: 10px; margin-top: 5px; letter-spacing: 1px; }
+    .hr  { border-top: 1px solid #1a1a1a; margin: 20px 0; }
+    .info {
+      background: #0a0f0a; border: 1px solid #1a2a1a;
+      border-radius: 6px; padding: 10px 14px; margin-bottom: 20px;
+      font-size: 11px; color: #4a7a4a; line-height: 1.7;
+    }
+
+    /* ── Output ── */
+    .out-hdr { color: var(--g); font-size: 11px; text-align: center; letter-spacing: 2px; margin-bottom: 14px; }
+    .clean-box {
+      background: #000; border: 1px solid #111;
+      border-radius: 8px; padding: 48px 36px;
+      text-align: center; margin-bottom: 20px;
+    }
+    .clean-inner { font-size: 13px; color: #fff; line-height: 2.6; font-family: 'Courier New', monospace; letter-spacing: .4px; }
+    .cl     { display: block; }
+    .cl-qr  { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .cl-usr { color: #777; font-size: 11px; margin-top: 8px; letter-spacing: 1px; }
+    #qr-img { width: 56px; height: 56px; image-rendering: pixelated; }
+
+    /* ── Copy rows ── */
+    .crows { display: grid; gap: 6px; margin-bottom: 16px; }
+    .crow  { display: flex; align-items: center; gap: 10px; background: var(--c); border: 1px solid var(--b); border-radius: 6px; padding: 9px 12px; }
+    .ckey  { color: var(--g); font-size: 11px; min-width: 44px; }
+    .cval  { flex: 1; font-size: 10px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cbtn  { background: #0a0a0a; color: #333; border: 1px solid #222; border-radius: 4px; padding: 4px 12px; font-size: 10px; cursor: pointer; font-family: inherit; letter-spacing: 1px; transition: all .15s; white-space: nowrap; }
+    .cbtn.ok { background: var(--dg); color: var(--g); border-color: var(--g); }
+
+    /* ── How-to ── */
+    .howto { background: var(--c); border: 1px solid var(--b); border-radius: 6px; padding: 12px; font-size: 11px; color: #444; line-height: 1.7; margin-bottom: 14px; }
+
+    /* ── Footer ── */
+    .ftr { color: #141414; font-size: 10px; text-align: center; margin-top: 36px; letter-spacing: 2px; }
+
+    /* ── Loader dots ── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+    .dots span { animation: blink 1.2s infinite; }
+    .dots span:nth-child(2) { animation-delay:.2s; }
+    .dots span:nth-child(3) { animation-delay:.4s; }
+
+    @media(max-width:480px){
+      body { padding: 16px 12px 40px; }
+      .clean-box { padding: 32px 20px; }
+      .tab-sub   { display: none; }
+      .hdr-title { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-eye">AZELUX CLIENT TOOL</div>
+    <h1 class="hdr-title">CONFIG IMAGE GENERATOR</h1>
+    <p class="hdr-sub">Two ways to get a clean config screenshot the Azelux site can read</p>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="tabs">
+    <button class="tab on" id="tab-ss" onclick="switchMode('ss')">
+      <div class="tab-ico">📸</div>
+      <div class="tab-lbl">SCREENSHOT</div>
+      <div class="tab-sub">Upload bad screenshot → AI fixes it</div>
+    </button>
+    <button class="tab" id="tab-mn" onclick="switchMode('mn')">
+      <div class="tab-ico">⌨</div>
+      <div class="tab-lbl">MANUAL</div>
+      <div class="tab-sub">Type codes + username → generate image</div>
+    </button>
+  </div>
+
+  <!-- ── SCREENSHOT PANE ─────────────────────────────────────────────────── -->
+  <div class="pane on" id="pane-ss">
+
+    <div class="dz" id="dz">
+      <div class="dz-ico">📸</div>
+      <div class="dz-txt">Click or drag &amp; drop your Azelux config screenshot</div>
+      <div class="dz-sub">Dark screenshots &amp; Minecraft font are fine — AI reads them</div>
+    </div>
+    <input type="file" id="file-in" accept="image/*" style="display:none" />
+
+    <!-- Live status (shown while loading) -->
+    <div class="status-bar" id="status-bar">
+      <span class="status-dot"></span>
+      <span id="status-txt">Scanning image with Llama 4 Scout...</span>
+    </div>
+
+    <button class="btn btn-g" id="ext-btn" style="display:none" onclick="extractCodes()">
+      ⚡ EXTRACT CONFIG CODES
+    </button>
+
+    <!-- Model used (shown after success) -->
+    <div class="model-badge" id="model-badge">
+      Extracted with <span id="model-name"></span>
+    </div>
+
+    <div class="err hide" id="ss-err"></div>
+  </div>
+
+  <!-- ── MANUAL PANE ──────────────────────────────────────────────────────── -->
+  <div class="pane" id="pane-mn">
+    <div class="info">
+      Type the numbers you see on screen. Don't include the
+      <span style="color:#39FF14">acx1@</span> prefix — just the digit string after it.
+    </div>
+    <div class="field">
+      <label>LINE 1 — ACX1 CODE</label>
+      <div class="frow">
+        <span class="fpfx">acx1@</span>
+        <input id="in-acx1" placeholder="e.g. 1319933993599379910480559860..." />
+      </div>
+    </div>
+    <div class="field">
+      <label>LINE 2 — ACX2 CODE</label>
+      <div class="frow">
+        <span class="fpfx">acx2@</span>
+        <input id="in-acx2" placeholder="e.g. 011001969001508510100010619..." />
+      </div>
+    </div>
+    <div class="field">
+      <label>LINE 3 — ACX3 CODE &nbsp;(numbers before the QR)</label>
+      <div class="frow">
+        <span class="fpfx">acx3@</span>
+        <input id="in-acx3" placeholder="e.g. 095011201011" />
+      </div>
+    </div>
+    <div class="hr"></div>
+    <div class="field">
+      <label>YOUR MINECRAFT USERNAME &nbsp;(becomes the QR code)</label>
+      <input id="in-user" placeholder="e.g. Steve, YourIGN..." />
+      <div class="fhint">Your username is encoded into the QR code on line 3</div>
+    </div>
+    <div class="err hide" id="mn-err"></div>
+    <button class="btn btn-g" onclick="generateManual()">⚡ GENERATE CONFIG IMAGE</button>
+  </div>
+
+  <!-- ── OUTPUT PANE (shared) ────────────────────────────────────────────── -->
+  <div class="pane" id="pane-out">
+    <div class="out-hdr">✓ READY — DOWNLOAD OR SCREENSHOT THE BOX BELOW, THEN UPLOAD TO AZELUX</div>
+
+    <!-- The clean output box -->
+    <div class="clean-box" id="clean-box">
+      <div class="clean-inner">
+        <span class="cl" id="o-acx1"></span>
+        <span class="cl" id="o-acx2"></span>
+        <span class="cl-qr">
+          <span id="o-acx3"></span>
+          <img id="qr-img" src="" alt="QR" crossorigin="anonymous" onerror="this.style.display='none'" />
+        </span>
+        <div class="cl-usr" id="o-usr" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="crows" id="crows"></div>
+
+    <button class="btn btn-dl" onclick="downloadImg()">⬇ DOWNLOAD AS IMAGE</button>
+
+    <div class="howto">
+      <span style="color:var(--g)">TWO OPTIONS: </span>
+      Click <em>Download as Image</em>, or screenshot the black box above.
+      Then upload at <span style="color:#888">https://azelux-client.github.io/config</span>
+    </div>
+
+    <button class="btn btn-o" onclick="resetAll()">← START OVER</button>
+  </div>
+
+</div>
+<p class="ftr">AZELUX CONFIG TOOL · GROQ AI · LLAMA 4</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+  integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
+  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let imgB64 = null, imgType = null;
+
+// ─── Mode switch ──────────────────────────────────────────────────────────────
+function switchMode(m) {
+  ['ss','mn'].forEach(id => {
+    document.getElementById(`tab-${id}`).classList.toggle('on', id === m);
+    document.getElementById(`pane-${id}`).classList.toggle('on', id === m);
+  });
+  document.getElementById('pane-out').classList.remove('on');
+}
+
+// ─── File upload / drag-drop ──────────────────────────────────────────────────
+const dz     = document.getElementById('dz');
+const fileIn = document.getElementById('file-in');
+const extBtn = document.getElementById('ext-btn');
+
+dz.addEventListener('click', () => fileIn.click());
+['dragenter','dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('over'); }));
+['dragleave','drop'].forEach(e =>    dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('over'); }));
+dz.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f?.type.startsWith('image/')) loadFile(f); });
+fileIn.addEventListener('change', () => { if (fileIn.files[0]) loadFile(fileIn.files[0]); });
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const src = ev.target.result;
+    imgB64   = src.split(',')[1];
+    imgType  = file.type || 'image/jpeg';
+    dz.classList.add('has');
+    dz.innerHTML = `<img src="${src}" alt="preview" /><div class="dz-chg">CLICK TO CHANGE</div>`;
+    extBtn.style.display = 'block';
+    hide('ss-err');
+    document.getElementById('model-badge').classList.remove('show');
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── Extract via serverless function ─────────────────────────────────────────
+const STATUS_STAGES = [
+  [0,    'Scanning image with Llama 4 Scout...'],
+  [5500, 'Llama 4 Scout slow — switching to Llama 3.2 11B...'],
+  [8000, 'Almost there...'],
+];
+
+async function extractCodes() {
+  if (!imgB64) return;
+
+  setLoading(true);
+  hide('ss-err');
+
+  // Client-side status ticker (mirrors server-side model chain timing)
+  const statusTxt = document.getElementById('status-txt');
+  const timers = STATUS_STAGES.slice(1).map(([ms, msg]) =>
+    setTimeout(() => { statusTxt.textContent = msg; }, ms)
+  );
+
+  try {
+    const res  = await fetch('/api/extract', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ imageBase64: imgB64, imageType: imgType }),
+    });
+
+    timers.forEach(clearTimeout);
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || data.hint || `Server error ${res.status}`);
+
+    // Show which model was used
+    const badge = document.getElementById('model-badge');
+    const name  = document.getElementById('model-name');
+    name.textContent = data.wasFallback
+      ? `${data.model} (fallback · ${data.ms}ms)`
+      : `${data.model} · ${data.ms}ms`;
+    badge.classList.add('show');
+
+    showOutput(data.codes, '');
+
+  } catch (err) {
+    timers.forEach(clearTimeout);
+    showErr('ss-err', `⚠ ${err.message}`);
+  }
+
+  setLoading(false);
+}
+
+function setLoading(on) {
+  extBtn.disabled = on;
+  extBtn.innerHTML = on
+    ? '▓▓▓ READING CODES<span class="dots"><span>.</span><span>.</span><span>.</span></span>'
+    : '⚡ EXTRACT CONFIG CODES';
+  document.getElementById('status-bar').classList.toggle('show', on);
+  if (on) document.getElementById('status-txt').textContent = STATUS_STAGES[0][1];
+}
+
+// ─── Manual generate ──────────────────────────────────────────────────────────
+function generateManual() {
+  const acx1 = document.getElementById('in-acx1').value.trim().replace(/^acx1@/i, '');
+  const acx2 = document.getElementById('in-acx2').value.trim().replace(/^acx2@/i, '');
+  const acx3 = document.getElementById('in-acx3').value.trim().replace(/^acx3@/i, '').split('@')[0];
+  const user = document.getElementById('in-user').value.trim();
+
+  if (!acx1 || !acx2 || !acx3) { showErr('mn-err', '⚠ Fill in all three code lines before generating.'); return; }
+  if (!user)                     { showErr('mn-err', "⚠ Enter your Minecraft username — it's used to generate the QR code."); return; }
+  hide('mn-err');
+  showOutput({ acx1, acx2, acx3 }, user);
+}
+
+// ─── Render output ────────────────────────────────────────────────────────────
+function showOutput(codes, username) {
+  document.getElementById('o-acx1').textContent = `acx1@${codes.acx1}`;
+  document.getElementById('o-acx2').textContent = `acx2@${codes.acx2}`;
+  document.getElementById('o-acx3').textContent = `acx3@${codes.acx3}@`;
+
+  const qrData = username || `acx3@${codes.acx3}`;
+  const qr = document.getElementById('qr-img');
+  qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=4`;
+  qr.style.display = '';
+
+  const usrEl = document.getElementById('o-usr');
+  if (username) { usrEl.textContent = `Username: ${username}`; usrEl.style.display = 'block'; }
+  else          { usrEl.style.display = 'none'; }
+
+  document.getElementById('crows').innerHTML = ['acx1','acx2','acx3'].map(k => `
+    <div class="crow">
+      <span class="ckey">${k}@</span>
+      <span class="cval">${codes[k]}</span>
+      <button class="cbtn" id="cb-${k}" onclick="doCopy('${k}','${codes[k]}')">COPY</button>
+    </div>`).join('');
+
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.getElementById('pane-out').classList.add('on');
+}
+
+// ─── Copy ─────────────────────────────────────────────────────────────────────
+function doCopy(k, v) {
+  navigator.clipboard.writeText(`${k}@${v}`).catch(() => {});
+  const btn = document.getElementById(`cb-${k}`);
+  btn.textContent = '✓ COPIED'; btn.classList.add('ok');
+  setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('ok'); }, 1800);
+}
+
+// ─── Download ─────────────────────────────────────────────────────────────────
+async function downloadImg() {
+  if (typeof html2canvas === 'undefined') { alert('Screenshot the black box manually.'); return; }
+  try {
+    const canvas = await html2canvas(document.getElementById('clean-box'), {
+      backgroundColor: '#000000', scale: 2, useCORS: true, logging: false,
+    });
+    const a = document.createElement('a');
+    a.download = 'azelux-config.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  } catch { alert('Download failed — screenshot the black box manually instead.'); }
+}
+
+// ─── Reset ────────────────────────────────────────────────────────────────────
+function resetAll() {
+  imgB64 = imgType = null;
+  dz.classList.remove('has','over');
+  dz.innerHTML = `
+    <div class="dz-ico">📸</div>
+    <div class="dz-txt">Click or drag &amp; drop your Azelux config screenshot</div>
+    <div class="dz-sub">Dark screenshots &amp; Minecraft font are fine — AI reads them</div>`;
+  extBtn.style.display = 'none';
+  fileIn.value = '';
+  ['acx1','acx2','acx3','user'].forEach(id => {
+    const el = document.getElementById(`in-${id}`); if (el) el.value = '';
+  });
+  document.getElementById('model-badge').classList.remove('show');
+  hide('ss-err'); hide('mn-err');
+  switchMode('ss');
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function showErr(id, msg) { const el = document.getElementById(id); el.innerHTML = msg; el.classList.remove('hide'); }
+function hide(id)         { document.getElementById(id).classList.add('hide'); }
+</script>
+</body>
+</html>
