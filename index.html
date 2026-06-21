@@ -211,7 +211,7 @@
     <!-- Live status (shown while loading) -->
     <div class="status-bar" id="status-bar">
       <span class="status-dot"></span>
-      <span id="status-txt">Scanning image with Llama 4 Scout...</span>
+      <span id="status-txt">Racing 4 models simultaneously...</span>
     </div>
 
     <button class="btn btn-g" id="ext-btn" style="display:none" onclick="extractCodes()">
@@ -341,9 +341,9 @@ function loadFile(file) {
 
 // ─── Extract via serverless function ─────────────────────────────────────────
 const STATUS_STAGES = [
-  [0,    'Scanning image with Llama 4 Scout...'],
-  [5500, 'Llama 4 Scout slow — switching to Llama 3.2 11B...'],
-  [8000, 'Almost there...'],
+  [0,    'Racing 4 models simultaneously...'],
+  [4000, 'Still waiting — models may be under load...'],
+  [8000, 'Almost there — at least one model is still trying...'],
 ];
 
 async function extractCodes() {
@@ -395,6 +395,7 @@ function setLoading(on) {
     : '⚡ EXTRACT CONFIG CODES';
   document.getElementById('status-bar').classList.toggle('show', on);
   if (on) document.getElementById('status-txt').textContent = STATUS_STAGES[0][1];
+
 }
 
 // ─── Manual generate ──────────────────────────────────────────────────────────
