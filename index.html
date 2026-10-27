@@ -212,7 +212,7 @@
     <!-- Live status (shown while loading) -->
     <div class="status-bar" id="status-bar">
       <span class="status-dot"></span>
-      <span id="status-txt">Racing 4 models simultaneously...</span>
+      <span id="status-txt">Racing configured free vision models...</span>
     </div>
 
     <button class="btn btn-g" id="ext-btn" style="display:none" onclick="extractCodes()">
@@ -295,7 +295,7 @@
   </div>
 
 </div>
-<p class="ftr">AZELUX CONFIG TOOL · GROQ AI · LLAMA 4</p>
+<p class="ftr">AZELUX CONFIG TOOL · FREE VISION MODEL FALLBACKS</p>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
   integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
@@ -342,7 +342,7 @@ function loadFile(file) {
 
 // ─── Extract via serverless function ─────────────────────────────────────────
 const STATUS_STAGES = [
-  [0,    'Racing 4 models simultaneously...'],
+  [0,    'Racing configured free vision models...'],
   [4000, 'Still waiting — models may be under load...'],
   [8000, 'Almost there — at least one model is still trying...'],
 ];

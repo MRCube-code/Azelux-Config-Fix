@@ -51,6 +51,9 @@
     button:disabled { cursor: not-allowed; opacity: .42; }
     .primary { background: var(--green); color: #071009; }
     .secondary { background: #161c17; color: #dce8de; border-color: #303b32; }
+    .qr-preview { display:none; margin:14px auto 0; padding:12px; width:fit-content; max-width:100%; background:#fff; border-radius:8px; }
+    .qr-preview.show { display:block; }
+    #output-qr { display:block; width:min(100%, 360px); height:auto; image-rendering:pixelated; }
     .guide { padding-left: 20px; margin: 8px 0 0; color: var(--muted); }
     .guide li { margin: 5px 0; }
     .privacy { font-size: 12px; color: #91a995; padding: 11px 12px; border-left: 3px solid #377348; background: #0b130d; border-radius: 0 7px 7px 0; margin-top: 14px; }
@@ -95,8 +98,19 @@
       </div>
     </section>
 
+    <section class="panel" aria-labelledby="qr-title">
+      <h2 class="step" id="qr-title"><span class="num">3</span> Make a clearer QR for the original Azelux site</h2>
+      <p class="hint">This regenerates a sharp, high-resolution QR from the exact decoded payload. It does not rewrite or simplify the config string.</p>
+      <div class="buttons">
+        <button class="primary" id="make-qr-btn" type="button" disabled>Generate High-Resolution QR</button>
+        <button class="secondary" id="download-qr-btn" type="button" disabled>Download QR PNG</button>
+      </div>
+      <div class="qr-preview" id="qr-preview"><canvas id="output-qr" width="1024" height="1024" aria-label="Regenerated Azelux config QR code"></canvas></div>
+      <div class="hint">Upload the downloaded PNG to the original Azelux page that reads QR codes. If that site expects a different payload format, a sharper QR alone cannot change the format.</div>
+    </section>
+
     <section class="panel" aria-labelledby="apply-title">
-      <h2 class="step" id="apply-title"><span class="num">3</span> Apply it in Minecraft</h2>
+      <h2 class="step" id="apply-title"><span class="num">4</span> Apply it in Minecraft</h2>
       <ol class="guide">
         <li>Tap <strong>Download Config Pack</strong> and save the <code>.mcpack</code> file.</li>
         <li>Open the downloaded pack with Minecraft and let it import.</li>
@@ -109,6 +123,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
   <script>
     (() => {
       'use strict';
@@ -122,6 +137,10 @@
       const rawInput = $('raw-config');
       const packButton = $('pack-btn');
       const copyButton = $('copy-btn');
+      const makeQrButton = $('make-qr-btn');
+      const downloadQrButton = $('download-qr-btn');
+      const qrCanvas = $('output-qr');
+      const qrPreview = $('qr-preview');
       let selectedFile = null;
       let lastDecoded = '';
 
@@ -138,6 +157,7 @@
         const valid = isAzeluxV2Payload(value);
         copyButton.disabled = !value;
         packButton.disabled = !valid;
+        makeQrButton.disabled = !valid;
         if (!value) {
           hideStatus(validateStatus);
           $('payload-hint').textContent = 'Nothing decoded yet. Keep the full payload, including the final @@MRxCubic@@acx marker.';
@@ -245,6 +265,45 @@
         }
       }
 
+      async function makeReadableQr() {
+        const payload = rawInput.value;
+        if (!isAzeluxV2Payload(payload.trim())) {
+          showStatus(validateStatus, 'Decode or paste a valid-looking Azelux V2 payload first.', 'bad');
+          return;
+        }
+        if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
+          showStatus(validateStatus, 'The QR generator did not load. Check your internet connection and reload.', 'bad');
+          return;
+        }
+        makeQrButton.disabled = true;
+        makeQrButton.textContent = 'Generating QR…';
+        try {
+          // Preserve the exact payload, including newlines and marker. Use a large canvas and high error correction.
+          await window.QRCode.toCanvas(qrCanvas, payload, {
+            width: 1024, margin: 5, errorCorrectionLevel: 'H',
+            color: { dark: '#000000', light: '#ffffff' }
+          });
+          qrPreview.classList.add('show');
+          downloadQrButton.disabled = false;
+          showStatus(validateStatus, 'High-resolution QR generated from the exact decoded payload. Download it and upload that PNG to the original Azelux QR reader.', 'good');
+        } catch (error) {
+          showStatus(validateStatus, `Could not generate QR: ${error && error.message ? error.message : 'unknown error'}`, 'bad');
+        } finally {
+          makeQrButton.disabled = !isAzeluxV2Payload(rawInput.value.trim());
+          makeQrButton.textContent = 'Generate High-Resolution QR';
+        }
+      }
+
+      function downloadReadableQr() {
+        if (!qrPreview.classList.contains('show')) return;
+        const a = document.createElement('a');
+        a.download = 'azelux-v2-readable-qr.png';
+        a.href = qrCanvas.toDataURL('image/png');
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+
       function makeUuid() {
         if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
@@ -326,6 +385,8 @@
       });
       rawInput.addEventListener('input', updatePayloadState);
       packButton.addEventListener('click', downloadPack);
+      makeQrButton.addEventListener('click', makeReadableQr);
+      downloadQrButton.addEventListener('click', downloadReadableQr);
       copyButton.addEventListener('click', async () => {
         const text = rawInput.value.trim();
         try {
