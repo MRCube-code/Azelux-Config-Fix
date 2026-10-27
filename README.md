@@ -1,87 +1,38 @@
-# Azelux Config Tool
+# Azelux Config Tools — V2 QR support
 
-Clean config screenshot generator for the Azelux Minecraft Bedrock client.  
-Uses **Groq AI** (free, extremely fast) with automatic model fallback.
+This project keeps the legacy screenshot-repair tool and adds a dedicated `saving.html` page for the Azelux V2 QR workflow.
 
----
+## What's changed
 
-## Setup — 2 steps
+- **V2 QR decoding:** reads the QR payload directly in the browser instead of sending a screenshot to an AI vision API.
+- **Better screenshot handling:** tries a centered crop, a tighter crop, the full image, and an enlarged copy for small screenshots.
+- **Payload validation:** looks for the V2 `acx1` prefix and `@@MRxCubic@@acx` ending marker before enabling pack download.
+- **Editable raw result:** the payload can be copied or manually pasted if the screenshot decoder cannot read it.
+- **Browser-side processing:** QR data and uploaded screenshots are not sent to a server by `saving.html`.
+- **Legacy path retained:** `index.html` still contains the older ACX text extractor/manual image generator and links to `saving.html`.
 
-### 1. Get a free Groq API key
-1. Go to [console.groq.com](https://console.groq.com)
-2. Sign up (free) → **API Keys** → **Create API Key**
-3. Copy the key (starts with `gsk_...`)
+## Deploy
 
-### 2. Add it to Vercel
-1. Open your Vercel project dashboard
-2. Go to **Settings → Environment Variables**
-3. Add:
-   - **Name:** `GROQ_API_KEY`
-   - **Value:** `gsk_your_key_here`
-   - **Environments:** ✅ Production ✅ Preview ✅ Development
-4. Click **Save** then **Redeploy**
+The site is static except for the legacy `/api/extract` function. `saving.html` can be served as a normal static file, for example on Vercel. Keep `api/extract.js` and configure `GROQ_API_KEY` only if you still want to use the legacy screenshot text-extraction feature on `index.html`.
 
-That's it. The key stays server-side — it's never sent to the browser.
+No API key is needed for the V2 QR decoder.
 
----
+## Important pack-format note
 
-## Deploy to Vercel
+The supplied ZIP did **not** include the source for the existing production `azelux.net/saving.html` page or its established config-pack writer. The new page creates a Bedrock-style `.mcpack` and stores the QR payload in `manifest.json`'s `header.description`, `azelux-config.txt`, and `config/azelux-v2.json`.
 
-### Option A — Drag & Drop (fastest)
-1. Go to [vercel.com/new](https://vercel.com/new)
-2. Drag the project folder onto the page
-3. Set the `GROQ_API_KEY` env var before deploying
-4. Click **Deploy**
+That is a documented best-effort format, **not verified against Azelux V2's internal pack reader**. Before replacing the production page, compare the generated manifest/files with a known-good `.mcpack` produced by the current `azelux.net/saving.html` page. If Azelux reads the config from a different manifest property or file path, change the `downloadPack()` function in `saving.html` to match that exact schema. The QR decoding itself is independent of this packaging assumption.
 
-### Option B — Vercel CLI
-```bash
-npm i -g vercel
-cd your-project-folder
-vercel
-# Then add the env var in the Vercel dashboard and redeploy
-```
+## Local testing
 
-### Option C — GitHub
-1. Push to a GitHub repo
-2. [vercel.com/new](https://vercel.com/new) → Import Git Repository
-3. Add `GROQ_API_KEY` in the Environment Variables section during setup
+Use a local static server or Vercel preview (do not open the page as `file://`, because CDN imports, object URLs, and download behavior may vary by browser).
 
----
+1. Open `/saving.html` on a phone or desktop browser.
+2. Upload the V2 screenshot with the whole QR code visible.
+3. Confirm the decoded text ends in `@@MRxCubic@@acx`.
+4. Inspect the downloaded `.mcpack` ZIP and verify its manifest and payload file.
+5. Test the pack in a disposable Minecraft world/profile before relying on it for an important config.
 
-## Project structure
+## Legacy API configuration
 
-```
-/
-├── index.html        ← entire frontend (static, no build step)
-├── api/
-│   └── extract.js    ← serverless function (Groq API + fallback logic)
-├── vercel.json       ← deployment config
-└── README.md
-```
-
----
-
-## AI Model chain
-
-| Priority | Model | Speed | Notes |
-|----------|-------|-------|-------|
-| 1st | Llama 4 Scout 17B | ~1–2s | Multimodal, fastest on Groq |
-| 2nd (fallback) | Llama 3.2 11B Vision | ~2–4s | Kicks in if Scout is slow/overloaded |
-
-The fallback is automatic — if the primary model doesn't respond within ~5.5 seconds, the server switches to the backup. The UI shows a live status message so you know what's happening.
-
----
-
-## Local development
-
-```bash
-npm i -g vercel
-vercel dev   # runs both the static site and the /api/extract function locally
-```
-
-Set the env var for local dev:
-```bash
-vercel env pull .env.local   # pulls env vars from Vercel to local
-# or just create .env.local manually:
-# GROQ_API_KEY=gsk_your_key_here
-```
+The legacy `/api/extract` endpoint reads `GROQ_API_KEY` from the hosting environment. There is no API key hard-coded in the source.

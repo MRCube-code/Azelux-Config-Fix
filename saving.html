@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#090c0a" />
+  <title>Save Azelux V2 Config</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080a09; --panel: #101411; --panel-2: #0b0e0c;
+      --line: #263128; --muted: #8b9a8d; --text: #eef7ef;
+      --green: #7bff9a; --green-deep: #133920; --red: #ff7b7b; --amber: #ffd58a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 26px 14px 42px;
+      background: radial-gradient(ellipse at 50% -10%, #183021 0, transparent 48%), var(--bg);
+      color: var(--text); font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    header { text-align: center; margin: 6px 0 26px; }
+    .eyebrow { color: var(--green); font-size: 11px; font-weight: 800; letter-spacing: .24em; text-transform: uppercase; }
+    h1 { margin: 8px 0; font-size: clamp(25px, 5vw, 38px); line-height: 1.12; letter-spacing: -.04em; }
+    .sub { margin: 0 auto; max-width: 560px; color: var(--muted); }
+    .panel { background: color-mix(in srgb, var(--panel) 94%, transparent); border: 1px solid var(--line); border-radius: 14px; padding: 20px; margin: 14px 0; box-shadow: 0 12px 35px #0003; }
+    .step { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; font-size: 16px; }
+    .num { width: 28px; height: 28px; display: grid; place-items: center; flex: none; border-radius: 8px; background: var(--green-deep); color: var(--green); font-size: 13px; font-weight: 800; }
+    .drop { display: block; border: 1.5px dashed #49614c; border-radius: 12px; padding: 25px 16px; background: var(--panel-2); text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+    .drop:hover, .drop.over { border-color: var(--green); background: #0c1910; }
+    .drop strong { display: block; font-size: 15px; }
+    .drop small { display: block; margin-top: 6px; color: var(--muted); }
+    .drop .ico { font-size: 29px; margin-bottom: 5px; }
+    input[type=file] { display: none; }
+    .preview-wrap { display: none; margin-top: 12px; padding: 10px; background: #050605; border: 1px solid var(--line); border-radius: 10px; }
+    .preview-wrap.show { display: block; }
+    #preview { display: block; max-width: 100%; max-height: 220px; margin: auto; object-fit: contain; border-radius: 6px; }
+    .file-info { color: var(--muted); font-size: 12px; text-align: center; margin-top: 7px; overflow-wrap: anywhere; }
+    .status { display: none; border: 1px solid var(--line); border-radius: 9px; padding: 11px 12px; margin-top: 12px; font-size: 13px; overflow-wrap: anywhere; }
+    .status.show { display: block; }
+    .status.good { color: var(--green); border-color: #285536; background: #0b1a10; }
+    .status.bad { color: var(--red); border-color: #5a2929; background: #1a0d0d; }
+    .status.warn { color: var(--amber); border-color: #5b4829; background: #171207; }
+    label.field-label { display: block; color: #c3d2c5; font-weight: 700; margin: 0 0 8px; }
+    textarea { display: block; width: 100%; min-height: 190px; resize: vertical; color: #e9f5eb; background: #060806; border: 1px solid #303c32; border-radius: 9px; padding: 12px; font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    textarea:focus { outline: 2px solid #356941; outline-offset: 1px; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    button, .button-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 45px; border: 1px solid transparent; border-radius: 9px; padding: 11px 14px; font: inherit; font-size: 13px; font-weight: 800; text-decoration: none; cursor: pointer; transition: filter .15s, border-color .15s; }
+    button:hover:not(:disabled), .button-link:hover { filter: brightness(1.1); }
+    button:disabled { cursor: not-allowed; opacity: .42; }
+    .primary { background: var(--green); color: #071009; }
+    .secondary { background: #161c17; color: #dce8de; border-color: #303b32; }
+    .guide { padding-left: 20px; margin: 8px 0 0; color: var(--muted); }
+    .guide li { margin: 5px 0; }
+    .privacy { font-size: 12px; color: #91a995; padding: 11px 12px; border-left: 3px solid #377348; background: #0b130d; border-radius: 0 7px 7px 0; margin-top: 14px; }
+    footer { text-align: center; color: #657366; font-size: 12px; margin-top: 26px; }
+    footer a { color: var(--green); text-decoration: none; }
+    @media (max-width: 520px) { body { padding: 18px 11px 30px; } .panel { padding: 15px; } .buttons { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Azelux Client · V2</div>
+      <h1>Save your config</h1>
+      <p class="sub">Upload the screenshot showing the Azelux QR code. This page reads the QR directly, so the old ACX text-recognition step is not needed.</p>
+    </header>
+
+    <section class="panel" aria-labelledby="upload-title">
+      <h2 class="step" id="upload-title"><span class="num">1</span> Upload the QR screenshot</h2>
+      <label class="drop" id="drop-zone" for="image-file" tabindex="0" role="button" aria-label="Choose a screenshot containing your Azelux QR code">
+        <span class="ico" aria-hidden="true">▦</span>
+        <strong>Choose screenshot or drop it here</strong>
+        <small>Use the original game screenshot where the full QR code is visible.</small>
+      </label>
+      <input id="image-file" type="file" accept="image/*" />
+      <div class="preview-wrap" id="preview-wrap">
+        <img id="preview" alt="Screenshot preview" />
+        <div class="file-info" id="file-info"></div>
+      </div>
+      <div class="status" id="scan-status" role="status" aria-live="polite"></div>
+      <div class="privacy">Privacy: QR reading happens in your browser. The screenshot and decoded config are not sent to an AI or uploaded by this page.</div>
+    </section>
+
+    <section class="panel" aria-labelledby="payload-title">
+      <h2 class="step" id="payload-title"><span class="num">2</span> Check the decoded config</h2>
+      <label class="field-label" for="raw-config">Raw decoded config string</label>
+      <textarea id="raw-config" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="The decoded QR payload will appear here. You can also paste a QR payload here if your screenshot cannot be read."></textarea>
+      <div class="hint" id="payload-hint">Nothing decoded yet. Keep the full payload, including the final @@MRxCubic@@acx marker.</div>
+      <div class="status" id="validate-status" role="status" aria-live="polite"></div>
+      <div class="buttons">
+        <button class="secondary" id="copy-btn" type="button" disabled>Copy raw string</button>
+        <button class="primary" id="pack-btn" type="button" disabled>Download Config Pack</button>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="apply-title">
+      <h2 class="step" id="apply-title"><span class="num">3</span> Apply it in Minecraft</h2>
+      <ol class="guide">
+        <li>Tap <strong>Download Config Pack</strong> and save the <code>.mcpack</code> file.</li>
+        <li>Open the downloaded pack with Minecraft and let it import.</li>
+        <li>Activate the pack as instructed by Azelux, then return to the client.</li>
+      </ol>
+      <p class="hint">If Minecraft imports the pack but Azelux does not apply the config, the site's pack metadata must match the exact format expected by your client build.</p>
+    </section>
+    <footer>© 2026 Azelux Client · <a href="/">Back to Azelux</a></footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    (() => {
+      'use strict';
+      const $ = (id) => document.getElementById(id);
+      const fileInput = $('image-file');
+      const dropZone = $('drop-zone');
+      const preview = $('preview');
+      const previewWrap = $('preview-wrap');
+      const scanStatus = $('scan-status');
+      const validateStatus = $('validate-status');
+      const rawInput = $('raw-config');
+      const packButton = $('pack-btn');
+      const copyButton = $('copy-btn');
+      let selectedFile = null;
+      let lastDecoded = '';
+
+      function showStatus(el, message, type) {
+        el.textContent = message;
+        el.className = `status show ${type || ''}`;
+      }
+      function hideStatus(el) {
+        el.textContent = '';
+        el.className = 'status';
+      }
+      function updatePayloadState() {
+        const value = rawInput.value.trim();
+        const valid = isAzeluxV2Payload(value);
+        copyButton.disabled = !value;
+        packButton.disabled = !valid;
+        if (!value) {
+          hideStatus(validateStatus);
+          $('payload-hint').textContent = 'Nothing decoded yet. Keep the full payload, including the final @@MRxCubic@@acx marker.';
+          return;
+        }
+        const lines = value.split(/\r?\n/).length;
+        $('payload-hint').textContent = `${value.length.toLocaleString()} characters · ${lines} lines`;
+        if (valid) {
+          showStatus(validateStatus, 'V2 marker found. The payload is ready to package.', 'good');
+        } else {
+          showStatus(validateStatus, 'QR text is present, but it does not look like an Azelux V2 payload. Check that the entire QR result was copied.', 'warn');
+        }
+      }
+      function isAzeluxV2Payload(value) {
+        const text = String(value || '').trim();
+        return /^acx1/m.test(text) && text.includes('@@MRxCubic@@acx');
+      }
+      function createCanvasFromImage(image, scale) {
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.imageSmoothingEnabled = scale < 1;
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        return canvas;
+      }
+      function cropCenterSquare(source, fraction) {
+        const side = Math.max(1, Math.floor(Math.min(source.width, source.height) * fraction));
+        const sx = Math.floor((source.width - side) / 2);
+        const sy = Math.floor((source.height - side) / 2);
+        const out = document.createElement('canvas');
+        out.width = side;
+        out.height = side;
+        const ctx = out.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(source, sx, sy, side, side, 0, 0, side, side);
+        return out;
+      }
+      function decodeCanvas(canvas) {
+        if (typeof window.jsQR !== 'function') throw new Error('The QR decoder did not load. Check your internet connection and reload this page.');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const result = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
+        return result && result.data ? result.data : '';
+      }
+      async function loadImage(file) {
+        if ('createImageBitmap' in window) return await createImageBitmap(file);
+        return await new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image);
+          image.onerror = () => reject(new Error('Could not read this image. Try another screenshot.'));
+          image.src = URL.createObjectURL(file);
+        });
+      }
+      async function scanFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+          showStatus(scanStatus, 'Choose an image file such as PNG, JPG, or WEBP.', 'bad');
+          return;
+        }
+        selectedFile = file;
+        lastDecoded = '';
+        rawInput.value = '';
+        updatePayloadState();
+        hideStatus(scanStatus);
+        preview.src = URL.createObjectURL(file);
+        previewWrap.classList.add('show');
+        $('file-info').textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB`;
+        showStatus(scanStatus, 'Reading QR code…', 'warn');
+
+        let image;
+        try {
+          image = await loadImage(file);
+          const maxDimension = 2200;
+          const scale = Math.min(1, maxDimension / Math.max(image.width, image.height));
+          const base = createCanvasFromImage(image, scale);
+          // Try a centered crop first (the V2 QR is normally centered), then the full image.
+          const candidates = [cropCenterSquare(base, 1), cropCenterSquare(base, 0.88), base];
+          // Small screenshots benefit from nearest-neighbour enlargement.
+          if (Math.min(base.width, base.height) < 700) {
+            const zoom = document.createElement('canvas');
+            zoom.width = base.width * 2; zoom.height = base.height * 2;
+            const zctx = zoom.getContext('2d', { willReadFrequently: true });
+            zctx.imageSmoothingEnabled = false;
+            zctx.drawImage(base, 0, 0, zoom.width, zoom.height);
+            candidates.push(zoom, cropCenterSquare(zoom, 1));
+          }
+          for (const candidate of candidates) {
+            const value = decodeCanvas(candidate);
+            if (value) { lastDecoded = value; break; }
+          }
+          if (!lastDecoded) {
+            showStatus(scanStatus, 'No QR code detected. Upload the original screenshot with the entire QR visible, or crop closer to the QR and try again.', 'bad');
+            return;
+          }
+          rawInput.value = lastDecoded;
+          updatePayloadState();
+          if (isAzeluxV2Payload(lastDecoded)) {
+            showStatus(scanStatus, 'QR decoded successfully. Review the full string below, then download the config pack.', 'good');
+          } else {
+            showStatus(scanStatus, 'A QR code was detected, but its contents do not match the expected Azelux V2 marker. Nothing has been packaged.', 'warn');
+          }
+        } catch (error) {
+          showStatus(scanStatus, error && error.message ? error.message : 'Could not decode the image.', 'bad');
+        } finally {
+          if (image && typeof image.close === 'function') image.close();
+        }
+      }
+
+      function makeUuid() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+          const r = Math.random() * 16 | 0;
+          return (c === 'x' ? r : (r & 3 | 8)).toString(16);
+        });
+      }
+      async function downloadPack() {
+        const payload = rawInput.value.trim();
+        if (!isAzeluxV2Payload(payload)) {
+          showStatus(validateStatus, 'The payload is not a valid-looking Azelux V2 string. The pack was not generated.', 'bad');
+          return;
+        }
+        if (typeof window.JSZip !== 'function') {
+          showStatus(validateStatus, 'The pack generator did not load. Check your internet connection and reload this page.', 'bad');
+          return;
+        }
+        packButton.disabled = true;
+        packButton.textContent = 'Preparing pack…';
+        try {
+          const manifest = {
+            format_version: 2,
+            header: {
+              name: 'Azelux V2 Config',
+              // The QR payload is retained byte-for-byte here because the config marker is client-specific.
+              description: payload,
+              uuid: makeUuid(),
+              version: [1, 0, 0],
+              min_engine_version: [1, 20, 0]
+            },
+            modules: [{
+              type: 'resources',
+              description: 'Azelux V2 configuration import',
+              uuid: makeUuid(),
+              version: [1, 0, 0]
+            }],
+            metadata: { authors: ['Azelux Config Reader'], url: 'https://azelux.net/saving.html' }
+          };
+          const zip = new window.JSZip();
+          zip.file('manifest.json', JSON.stringify(manifest, null, 2));
+          zip.file('azelux-config.txt', payload);
+          zip.file('config/azelux-v2.json', JSON.stringify({ format: 'azelux-v2', payload }, null, 2));
+          zip.file('README.txt', 'Azelux V2 configuration pack.\n\nThe original QR payload is stored in manifest.json header.description, azelux-config.txt, and config/azelux-v2.json.\n\nIf Minecraft imports this pack but Azelux does not apply the config, the pack metadata must be adapted to the exact format expected by your Azelux client build.\n');
+          try {
+            const iconResponse = await fetch('/assets/azelux-pack-icon.png', { cache: 'no-store' });
+            if (iconResponse.ok) zip.file('pack_icon.png', await iconResponse.blob());
+          } catch (_) { /* The icon is optional; keep pack creation usable if it is unavailable. */ }
+          const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'azelux-v2-config.mcpack';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 30000);
+          showStatus(validateStatus, 'Pack file created. Import it into Minecraft, then activate it as Azelux requires.', 'good');
+        } catch (error) {
+          showStatus(validateStatus, `Could not create the pack: ${error && error.message ? error.message : 'unknown error'}`, 'bad');
+        } finally {
+          packButton.disabled = !isAzeluxV2Payload(rawInput.value.trim());
+          packButton.textContent = 'Download Config Pack';
+        }
+      }
+
+      dropZone.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); fileInput.click(); }
+      });
+      fileInput.addEventListener('change', () => { if (fileInput.files && fileInput.files[0]) scanFile(fileInput.files[0]); });
+      ['dragenter', 'dragover'].forEach((name) => dropZone.addEventListener(name, (event) => {
+        event.preventDefault(); dropZone.classList.add('over');
+      }));
+      ['dragleave', 'drop'].forEach((name) => dropZone.addEventListener(name, (event) => {
+        event.preventDefault(); dropZone.classList.remove('over');
+      }));
+      dropZone.addEventListener('drop', (event) => {
+        const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+        if (file) scanFile(file);
+      });
+      rawInput.addEventListener('input', updatePayloadState);
+      packButton.addEventListener('click', downloadPack);
+      copyButton.addEventListener('click', async () => {
+        const text = rawInput.value.trim();
+        try {
+          await navigator.clipboard.writeText(text);
+          copyButton.textContent = 'Copied';
+          setTimeout(() => { copyButton.textContent = 'Copy raw string'; }, 1400);
+        } catch (_) {
+          rawInput.focus(); rawInput.select();
+          showStatus(validateStatus, 'Clipboard access was blocked. The text is selected; copy it manually.', 'warn');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
