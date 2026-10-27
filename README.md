@@ -16,14 +16,35 @@ This project keeps the legacy screenshot-repair tool and adds a dedicated `savin
 
 The site is static except for the legacy `/api/extract` function. `saving.html` can be served as a normal static file, for example on Vercel.
 
-### Free vision-model fallback setup
+### Vision-model fallback setup (OpenRouter + Google AI Studio + Groq)
 
-The old extractor used four retired Groq vision model IDs, so all attempts could fail even when the API key was valid. The updated API uses current vision-capable model IDs:
+The legacy `/api/extract` endpoint now supports three server-side providers. It tries configured image-capable models in small batches so a single upload does not immediately fire every model request at once.
 
-- Groq: `qwen/qwen3.8-27b` (configure `GROQ_API_KEY`).
-- OpenRouter free vision fallbacks: Google Gemma 4 31B, Google Gemma 4 26B A4B, NVIDIA Nemotron 3.5 Super VL, and Qwen 3.8 (configure `OPENROUTER_API_KEY`).
+**Google AI Studio / Gemini API** — configure `GEMINI_API_KEY`:
+- `gemini-3.8-flash`
+- `gemini-3.5-flash-lite`
+- `gemini-3.6-flash`
+- `gemini-3.7-flash`
+- `gemini-3.1-flash-lite`
+- `gemini-2.5-flash-lite` (legacy availability; may be restricted for new projects)
 
-Add the keys in Vercel Project Settings → Environment Variables, then redeploy. `GROQ_API_KEY` alone enables the Groq model; `OPENROUTER_API_KEY` enables the OpenRouter pool. These models are free-tier offerings but can still be rate-limited or temporarily unavailable; no model list can guarantee permanent capacity. The browser QR decoder and QR generator do not need any API key.
+**OpenRouter** — configure `OPENROUTER_API_KEY`:
+- `nvidia/nemotron-3.5-super-vl:free`
+- `google/gemma-4-31b-it:free`
+- `google/gemma-4-26b-a4b-it:free`
+- `qwen/qwen3.8-27b:free`
+- `dots-studio/dots-3-note-preview:free`
+- `thinkingmachines/inkling:free`
+- `thinkingmachines/inkling-small:free`
+- `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`
+- `openrouter/free` (automatic free-model router; availability/vision routing can vary)
+
+**Groq** — configure `GROQ_API_KEY`:
+- `qwen/qwen3.8-27b`
+
+Add any or all of these keys in Vercel Project Settings → Environment Variables, then redeploy. The key names must be exactly `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, and/or `GROQ_API_KEY`. Do not paste keys into `index.html`, `saving.html`, or commit them to GitHub. Gemini's free-tier quota depends on the project, region, model, and current Google limits; OpenRouter free endpoints can also be busy or rate-limited. Adding more model choices improves fallback odds but cannot guarantee capacity or that a provider keeps a model free. Model IDs and availability change over time; verify them in the providers' model catalogues if a model begins returning 404/unsupported errors.
+
+The V2 QR decoder and QR generator on `saving.html` run in the browser and do not need any API key. The AI keys are only for the legacy screenshot-to-text extractor on `index.html`.
 
 ## Important pack-format note
 
@@ -44,4 +65,4 @@ Use a local static server or Vercel preview (do not open the page as `file://`, 
 
 ## Legacy API configuration
 
-The legacy `/api/extract` endpoint reads `GROQ_API_KEY` and `OPENROUTER_API_KEY` from hosting environment variables. There are no API keys hard-coded in the source.
+The legacy `/api/extract` endpoint reads `GROQ_API_KEY`, `OPENROUTER_API_KEY`, and `GEMINI_API_KEY` from hosting environment variables. There are no API keys hard-coded in the source.
