@@ -16,13 +16,12 @@
       --et: #ff4444;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       background: var(--bg); color: #fff;
       font-family: 'Courier New', Courier, monospace;
       min-height: 100vh; padding: 28px 16px 52px;
     }
-    .wrap { max-width: 680px; margin: 0 auto; }
+    .wrap { max-width: 700px; margin: 0 auto; }
 
     /* ── Header ── */
     .hdr { text-align: center; margin-bottom: 28px; }
@@ -30,135 +29,109 @@
     .hdr-title { font-size: 22px; font-weight: bold; letter-spacing: 2px; }
     .hdr-sub   { color: #3a3a3a; font-size: 11px; margin-top: 6px; letter-spacing: 1px; }
 
-    /* ── Mode tabs ── */
-    .tabs {
-      display: flex; gap: 6px;
-      background: var(--c); padding: 5px;
-      border-radius: 8px; border: 1px solid var(--b);
-      margin-bottom: 26px;
-    }
-    .tab {
-      flex: 1; padding: 12px 8px; background: transparent;
-      border: 1px solid transparent; border-radius: 6px;
-      cursor: pointer; text-align: center; transition: all .2s; font-family: inherit;
-    }
-    .tab:hover { border-color: #2a2a2a; }
-    .tab.on    { background: var(--dg); border-color: var(--g); }
-    .tab-ico   { font-size: 18px; margin-bottom: 4px; }
-    .tab-lbl   { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: #333; }
-    .tab.on .tab-lbl { color: var(--g); }
-    .tab-sub   { font-size: 9px; color: #222; letter-spacing: 1px; margin-top: 2px; }
-    .tab.on .tab-sub { color: #666; }
+    /* ── Version tabs ── */
+    .vtabs { display: flex; gap: 6px; background: var(--c); padding: 5px; border-radius: 8px; border: 1px solid var(--b); margin-bottom: 26px; }
+    .vtab  { flex: 1; padding: 14px 8px; background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; text-align: center; transition: all .2s; font-family: inherit; }
+    .vtab:hover { border-color: #2a2a2a; }
+    .vtab.on    { background: var(--dg); border-color: var(--g); }
+    .vtab-badge { display: inline-block; background: var(--g); color: #000; font-size: 9px; font-weight: bold; padding: 2px 6px; border-radius: 3px; letter-spacing: 1px; margin-bottom: 5px; }
+    .vtab.on .vtab-badge { background: var(--g); }
+    .vtab:not(.on) .vtab-badge { background: #222; color: #555; }
+    .vtab-lbl  { font-size: 11px; font-weight: bold; letter-spacing: 2px; color: #333; display: block; }
+    .vtab.on .vtab-lbl { color: var(--g); }
+    .vtab-sub  { font-size: 9px; color: #222; letter-spacing: 1px; margin-top: 3px; display: block; }
+    .vtab.on .vtab-sub { color: #666; }
 
     /* ── Panes ── */
     .pane    { display: none; }
     .pane.on { display: block; }
 
+    /* ── Inner mode tabs (V1) ── */
+    .mtabs { display: flex; gap: 5px; margin-bottom: 20px; }
+    .mtab  { flex: 1; padding: 10px 6px; background: transparent; border: 1px solid #111; border-radius: 5px; cursor: pointer; text-align: center; font-family: inherit; transition: all .2s; }
+    .mtab.on    { background: #0a120a; border-color: #2a4a2a; }
+    .mtab-ico  { font-size: 16px; display: block; margin-bottom: 3px; }
+    .mtab-lbl  { font-size: 10px; letter-spacing: 1px; color: #333; }
+    .mtab.on .mtab-lbl { color: #4a8a4a; }
+
     /* ── Drop zone ── */
-    .dz {
-      border: 2px dashed #222; border-radius: 8px; padding: 44px;
-      text-align: center; cursor: pointer; background: var(--c);
-      margin-bottom: 14px; transition: border-color .2s; user-select: none;
-    }
+    .dz { border: 2px dashed #222; border-radius: 8px; padding: 44px; text-align: center; cursor: pointer; background: var(--c); margin-bottom: 14px; transition: border-color .2s; user-select: none; }
     .dz:hover, .dz.over { border-color: var(--g); }
     .dz.has  { padding: 14px; }
     .dz-ico  { font-size: 36px; margin-bottom: 10px; }
     .dz-txt  { color: #999; font-size: 13px; }
     .dz-sub  { color: #333; font-size: 11px; margin-top: 4px; }
     .dz-chg  { color: #333; font-size: 10px; margin-top: 8px; letter-spacing: 1px; }
-    .dz img  { max-height: 170px; max-width: 100%; border-radius: 4px; display: block; margin: 0 auto; }
+    .dz img  { max-height: 200px; max-width: 100%; border-radius: 4px; display: block; margin: 0 auto; }
 
     /* ── Buttons ── */
-    .btn {
-      display: block; width: 100%; padding: 14px;
-      border: none; border-radius: 6px; font-size: 13px;
-      font-weight: bold; letter-spacing: 3px; cursor: pointer;
-      font-family: inherit; transition: all .2s; margin-bottom: 12px;
-    }
-    .btn-g { background: var(--g); color: #000; }
+    .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 3px; cursor: pointer; font-family: inherit; transition: all .2s; margin-bottom: 12px; }
+    .btn-g  { background: var(--g); color: #000; }
     .btn-g:hover:not(:disabled) { background: #50ff2a; }
     .btn-g:disabled { background: #111; color: #444; cursor: wait; }
-    .btn-o { background: transparent; color: #333; border: 1px solid #1a1a1a; font-size: 11px; margin-bottom: 0; }
+    .btn-o  { background: transparent; color: #333; border: 1px solid #1a1a1a; font-size: 11px; margin-bottom: 0; }
     .btn-o:hover { border-color: #333; color: #666; }
     .btn-dl { background: #0a1a0a; color: var(--g); border: 1px solid #1a3a1a; font-size: 12px; letter-spacing: 2px; margin-bottom: 10px; }
     .btn-dl:hover { background: var(--dg); border-color: var(--g); }
+    .btn-upload { background: #000; color: #fff; border: 1px solid #333; font-size: 12px; letter-spacing: 2px; margin-bottom: 10px; }
+    .btn-upload:hover { border-color: #fff; }
 
-    /* ── Status badge (shown during loading) ── */
-    .status-bar {
-      display: none;
-      align-items: center; gap: 10px;
-      background: #050f05; border: 1px solid #1a2a1a;
-      border-radius: 6px; padding: 10px 14px;
-      font-size: 11px; color: #5a8a5a; margin-bottom: 14px;
-      letter-spacing: 1px;
-    }
-    .status-bar.show { display: flex; }
-    .status-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: var(--g); flex-shrink: 0;
-      animation: pulse 1s infinite;
-    }
+    /* ── Status ── */
+    .sbar { display: none; align-items: center; gap: 10px; background: #050f05; border: 1px solid #1a2a1a; border-radius: 6px; padding: 10px 14px; font-size: 11px; color: #5a8a5a; margin-bottom: 14px; letter-spacing: 1px; }
+    .sbar.show { display: flex; }
+    .sdot { width: 7px; height: 7px; border-radius: 50%; background: var(--g); flex-shrink: 0; animation: pulse 1s infinite; }
     @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.3;transform:scale(.7)} }
-
-    /* ── Model badge (shown after success) ── */
-    .model-badge {
-      display: none;
-      font-size: 10px; text-align: right;
-      color: #2a4a2a; letter-spacing: 1px; margin-bottom: 14px;
-    }
-    .model-badge.show { display: block; }
-    .model-badge span { color: #3a6a3a; }
+    .mbadge { display: none; font-size: 10px; text-align: right; color: #2a4a2a; letter-spacing: 1px; margin-bottom: 10px; }
+    .mbadge.show { display: block; }
+    .mbadge span { color: #3a6a3a; }
 
     /* ── Error ── */
     .err { background: var(--eb); border: 1px solid var(--ebd); border-radius: 6px; padding: 13px; color: var(--et); font-size: 12px; line-height: 1.65; margin-bottom: 14px; }
     .err.hide { display: none; }
 
-    /* ── Manual inputs ── */
+    /* ── Info box ── */
+    .info { background: #0a0f0a; border: 1px solid #1a2a1a; border-radius: 6px; padding: 10px 14px; margin-bottom: 20px; font-size: 11px; color: #4a7a4a; line-height: 1.7; }
+    .info b { color: var(--g); }
+
+    /* ── Steps (V2 guide) ── */
+    .steps { display: flex; gap: 0; margin-bottom: 20px; }
+    .step  { flex: 1; padding: 10px 6px; text-align: center; position: relative; }
+    .step:not(:last-child)::after { content: '→'; position: absolute; right: -6px; top: 50%; transform: translateY(-50%); color: #333; font-size: 12px; }
+    .step-n { width: 24px; height: 24px; border-radius: 50%; background: var(--dg); border: 1px solid #2a4a2a; color: var(--g); font-size: 11px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 5px; }
+    .step-t { font-size: 9px; color: #444; letter-spacing: 1px; line-height: 1.4; }
+
+    /* ── V2 Output: clean QR canvas ── */
+    .v2-out { text-align: center; }
+    .v2-out-hdr { color: var(--g); font-size: 11px; letter-spacing: 2px; margin-bottom: 14px; }
+    /* The canvas that mirrors the exact azelux.net-ready format */
+    #qr-canvas { display: block; margin: 0 auto 18px; border-radius: 4px; max-width: 100%; }
+    .canvas-wrap { background: #000; border: 1px solid #111; border-radius: 8px; padding: 20px; margin-bottom: 18px; display: inline-block; }
+
+    /* ── V1 manual inputs ── */
     .field { margin-bottom: 16px; }
     .field > label { display: block; color: #555; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; }
     .frow  { display: flex; align-items: center; gap: 6px; }
     .fpfx  { color: var(--g); font-size: 12px; white-space: nowrap; }
-    .field input {
-      flex: 1; width: 100%;
-      background: #060606; border: 1px solid var(--b); border-radius: 5px;
-      padding: 10px 12px; color: #fff; font-size: 12px;
-      font-family: inherit; letter-spacing: .5px; outline: none;
-    }
+    .field input { flex: 1; width: 100%; background: #060606; border: 1px solid var(--b); border-radius: 5px; padding: 10px 12px; color: #fff; font-size: 12px; font-family: inherit; letter-spacing: .5px; outline: none; }
     .field input:focus { border-color: var(--g); }
     .fhint { color: #333; font-size: 10px; margin-top: 5px; letter-spacing: 1px; }
-    .hr  { border-top: 1px solid #1a1a1a; margin: 20px 0; }
-    .info {
-      background: #0a0f0a; border: 1px solid #1a2a1a;
-      border-radius: 6px; padding: 10px 14px; margin-bottom: 20px;
-      font-size: 11px; color: #4a7a4a; line-height: 1.7;
-    }
+    .hr    { border-top: 1px solid #1a1a1a; margin: 20px 0; }
 
-    /* ── Output ── */
-    .out-hdr { color: var(--g); font-size: 11px; text-align: center; letter-spacing: 2px; margin-bottom: 14px; }
-    .clean-box {
-      background: #000; border: 1px solid #111;
-      border-radius: 8px; padding: 48px 36px;
-      text-align: center; margin-bottom: 20px;
-    }
+    /* ── V1 output (clean text box) ── */
+    .v1-out-hdr { color: var(--g); font-size: 11px; text-align: center; letter-spacing: 2px; margin-bottom: 14px; }
+    .clean-box  { background: #000; border: 1px solid #111; border-radius: 8px; padding: 48px 36px; text-align: center; margin-bottom: 20px; }
     .clean-inner { font-size: 13px; color: #fff; line-height: 2.6; font-family: 'Courier New', monospace; letter-spacing: .4px; }
-    .cl     { display: block; }
-    .cl-qr  { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .cl    { display: block; }
+    .cl-qr { display: flex; align-items: center; justify-content: center; gap: 10px; }
     .cl-usr { color: #777; font-size: 11px; margin-top: 8px; letter-spacing: 1px; }
     #qr-img { width: 56px; height: 56px; image-rendering: pixelated; }
-
-    /* ── Copy rows ── */
     .crows { display: grid; gap: 6px; margin-bottom: 16px; }
     .crow  { display: flex; align-items: center; gap: 10px; background: var(--c); border: 1px solid var(--b); border-radius: 6px; padding: 9px 12px; }
     .ckey  { color: var(--g); font-size: 11px; min-width: 44px; }
     .cval  { flex: 1; font-size: 10px; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cbtn  { background: #0a0a0a; color: #333; border: 1px solid #222; border-radius: 4px; padding: 4px 12px; font-size: 10px; cursor: pointer; font-family: inherit; letter-spacing: 1px; transition: all .15s; white-space: nowrap; }
     .cbtn.ok { background: var(--dg); color: var(--g); border-color: var(--g); }
-
-    /* ── How-to ── */
     .howto { background: var(--c); border: 1px solid var(--b); border-radius: 6px; padding: 12px; font-size: 11px; color: #444; line-height: 1.7; margin-bottom: 14px; }
-
-    /* ── Footer ── */
-    .ftr { color: #141414; font-size: 10px; text-align: center; margin-top: 36px; letter-spacing: 2px; }
 
     /* ── Loader dots ── */
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
@@ -166,11 +139,14 @@
     .dots span:nth-child(2) { animation-delay:.2s; }
     .dots span:nth-child(3) { animation-delay:.4s; }
 
+    .ftr { color: #141414; font-size: 10px; text-align: center; margin-top: 36px; letter-spacing: 2px; }
+
     @media(max-width:480px){
       body { padding: 16px 12px 40px; }
-      .clean-box { padding: 32px 20px; }
-      .tab-sub   { display: none; }
+      .clean-box { padding: 32px 16px; }
+      .vtab-sub { display: none; }
       .hdr-title { font-size: 18px; }
+      .steps { display: none; }
     }
   </style>
 </head>
@@ -181,121 +157,183 @@
   <div class="hdr">
     <div class="hdr-eye">AZELUX CLIENT TOOL</div>
     <h1 class="hdr-title">CONFIG IMAGE GENERATOR</h1>
-    <p class="hdr-sub">Legacy ACX screenshot repair and manual tools</p>
-    <p style="margin-top:12px"><a href="/saving.html" style="display:inline-block;padding:9px 14px;border:1px solid #39FF14;border-radius:6px;color:#39FF14;text-decoration:none;font-size:12px;font-weight:bold;letter-spacing:1px">AZELUX V2 · READ QR / SAVE CONFIG →</a></p>
+    <p class="hdr-sub">Fix your config screenshot so azelux.net accepts it</p>
   </div>
 
-  <!-- Mode tabs -->
-  <div class="tabs">
-    <button class="tab on" id="tab-ss" onclick="switchMode('ss')">
-      <div class="tab-ico">📸</div>
-      <div class="tab-lbl">SCREENSHOT</div>
-      <div class="tab-sub">Upload bad screenshot → AI fixes it</div>
+  <!-- Version tabs -->
+  <div class="vtabs">
+    <button class="vtab on" id="vtab-v2" onclick="switchVersion('v2')">
+      <span class="vtab-badge">V2 NEW</span>
+      <span class="vtab-lbl">AZELUX V2</span>
+      <span class="vtab-sub">QR code → clean image for azelux.net</span>
     </button>
-    <button class="tab" id="tab-mn" onclick="switchMode('mn')">
-      <div class="tab-ico">⌨</div>
-      <div class="tab-lbl">MANUAL</div>
-      <div class="tab-sub">Type codes + username → generate image</div>
+    <button class="vtab" id="vtab-v1" onclick="switchVersion('v1')">
+      <span class="vtab-badge">V1</span>
+      <span class="vtab-lbl">AZELUX V1</span>
+      <span class="vtab-sub">acx1/acx2/acx3 code lines</span>
     </button>
   </div>
 
-  <!-- ── SCREENSHOT PANE ─────────────────────────────────────────────────── -->
-  <div class="pane on" id="pane-ss">
+  <!-- ══════════════════════════════════════════════════════════
+       V2 PANE
+  ══════════════════════════════════════════════════════════ -->
+  <div class="pane on" id="pane-v2">
 
-    <div class="dz" id="dz">
-      <div class="dz-ico">📸</div>
-      <div class="dz-txt">Click or drag &amp; drop your Azelux config screenshot</div>
-      <div class="dz-sub">Dark screenshots &amp; Minecraft font are fine — AI reads them</div>
-    </div>
-    <input type="file" id="file-in" accept="image/*" style="display:none" />
-
-    <!-- Live status (shown while loading) -->
-    <div class="status-bar" id="status-bar">
-      <span class="status-dot"></span>
-      <span id="status-txt">Racing configured free vision models...</span>
+    <!-- How it works -->
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><div class="step-t">Screenshot<br>game QR</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t">Upload here<br>AI decodes it</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t">Download<br>clean image</div></div>
+      <div class="step"><div class="step-n">4</div><div class="step-t">Upload to<br>azelux.net</div></div>
     </div>
 
-    <button class="btn btn-g" id="ext-btn" style="display:none" onclick="extractCodes()">
-      ⚡ EXTRACT CONFIG CODES
-    </button>
-
-    <!-- Model used (shown after success) -->
-    <div class="model-badge" id="model-badge">
-      Extracted with <span id="model-name"></span>
-    </div>
-
-    <div class="err hide" id="ss-err"></div>
-  </div>
-
-  <!-- ── MANUAL PANE ──────────────────────────────────────────────────────── -->
-  <div class="pane" id="pane-mn">
     <div class="info">
-      Type the numbers you see on screen. Don't include the
-      <span style="color:#39FF14">acx1@</span> prefix — just the digit string after it.
+      <b>Why this tool?</b> The in-game QR screenshot has a dark purple background and game UI that azelux.net sometimes rejects.
+      This tool decodes your QR and re-generates it as a clean black image — exactly the format the site accepts.
     </div>
-    <div class="field">
-      <label>LINE 1 — ACX1 CODE</label>
-      <div class="frow">
-        <span class="fpfx">acx1@</span>
-        <input id="in-acx1" placeholder="e.g. 1319933993599379910480559860..." />
+
+    <!-- Drop zone -->
+    <div class="dz" id="dz-v2">
+      <div class="dz-ico">📷</div>
+      <div class="dz-txt">Upload your in-game "SAVE YOUR CONFIG" screenshot</div>
+      <div class="dz-sub">The screen showing the QR code — Step 3/3</div>
+    </div>
+    <input type="file" id="file-v2" accept="image/*" style="display:none" />
+
+    <!-- Status -->
+    <div class="sbar" id="sbar-v2">
+      <span class="sdot"></span>
+      <span id="stxt-v2">Racing 4 AI models to decode your QR...</span>
+    </div>
+
+    <button class="btn btn-g" id="btn-v2" style="display:none" onclick="extractV2()">
+      ⚡ DECODE &amp; FIX QR CODE
+    </button>
+
+    <div class="mbadge" id="badge-v2">Decoded with <span id="model-v2"></span></div>
+    <div class="err hide" id="err-v2"></div>
+
+    <!-- V2 Output -->
+    <div class="pane" id="v2-result">
+      <div class="v2-out-hdr">✓ CLEAN QR READY — DOWNLOAD AND UPLOAD TO AZELUX.NET</div>
+
+      <div style="text-align:center">
+        <div class="canvas-wrap">
+          <canvas id="qr-canvas" width="400" height="460"></canvas>
+        </div>
       </div>
-    </div>
-    <div class="field">
-      <label>LINE 2 — ACX2 CODE</label>
-      <div class="frow">
-        <span class="fpfx">acx2@</span>
-        <input id="in-acx2" placeholder="e.g. 011001969001508510100010619..." />
+
+      <button class="btn btn-dl" id="dl-btn-v2" onclick="downloadV2()">⬇ DOWNLOAD IMAGE</button>
+
+      <button class="btn btn-upload" onclick="window.open('https://azelux.net/saving.html','_blank')">
+        🌐 OPEN AZELUX.NET/SAVING.HTML
+      </button>
+
+      <div class="howto">
+        <span style="color:var(--g)">NEXT STEPS: </span>
+        1. Download the image above &nbsp;→&nbsp;
+        2. Go to <span style="color:#888">azelux.net/saving.html</span> &nbsp;→&nbsp;
+        3. Upload the downloaded image
       </div>
+
+      <button class="btn btn-o" onclick="resetV2()">← TRY ANOTHER SCREENSHOT</button>
     </div>
-    <div class="field">
-      <label>LINE 3 — ACX3 CODE &nbsp;(numbers before the QR)</label>
-      <div class="frow">
-        <span class="fpfx">acx3@</span>
-        <input id="in-acx3" placeholder="e.g. 095011201011" />
-      </div>
-    </div>
-    <div class="hr"></div>
-    <div class="field">
-      <label>YOUR MINECRAFT USERNAME &nbsp;(becomes the QR code)</label>
-      <input id="in-user" placeholder="e.g. Steve, YourIGN..." />
-      <div class="fhint">Your username is encoded into the QR code on line 3</div>
-    </div>
-    <div class="err hide" id="mn-err"></div>
-    <button class="btn btn-g" onclick="generateManual()">⚡ GENERATE CONFIG IMAGE</button>
+
   </div>
 
-  <!-- ── OUTPUT PANE (shared) ────────────────────────────────────────────── -->
-  <div class="pane" id="pane-out">
-    <div class="out-hdr">✓ READY — DOWNLOAD OR SCREENSHOT THE BOX BELOW, THEN UPLOAD TO AZELUX</div>
+  <!-- ══════════════════════════════════════════════════════════
+       V1 PANE
+  ══════════════════════════════════════════════════════════ -->
+  <div class="pane" id="pane-v1">
 
-    <!-- The clean output box -->
-    <div class="clean-box" id="clean-box">
-      <div class="clean-inner">
-        <span class="cl" id="o-acx1"></span>
-        <span class="cl" id="o-acx2"></span>
-        <span class="cl-qr">
-          <span id="o-acx3"></span>
-          <img id="qr-img" src="" alt="QR" crossorigin="anonymous" onerror="this.style.display='none'" />
-        </span>
-        <div class="cl-usr" id="o-usr" style="display:none"></div>
+    <!-- Inner mode tabs -->
+    <div class="mtabs">
+      <button class="mtab on" id="mtab-ss" onclick="switchV1Mode('ss')">
+        <span class="mtab-ico">📸</span>
+        <span class="mtab-lbl">SCREENSHOT</span>
+      </button>
+      <button class="mtab" id="mtab-mn" onclick="switchV1Mode('mn')">
+        <span class="mtab-ico">⌨</span>
+        <span class="mtab-lbl">MANUAL</span>
+      </button>
+    </div>
+
+    <!-- Screenshot sub-pane -->
+    <div class="pane on" id="v1-ss">
+      <div class="dz" id="dz-v1">
+        <div class="dz-ico">📸</div>
+        <div class="dz-txt">Upload your Azelux V1 config screenshot</div>
+        <div class="dz-sub">Shows acx1@ / acx2@ / acx3@ code lines — dark or Minecraft font is fine</div>
       </div>
+      <input type="file" id="file-v1" accept="image/*" style="display:none" />
+
+      <div class="sbar" id="sbar-v1">
+        <span class="sdot"></span>
+        <span id="stxt-v1">Racing 4 AI models simultaneously...</span>
+      </div>
+
+      <button class="btn btn-g" id="btn-v1" style="display:none" onclick="extractV1()">
+        ⚡ EXTRACT CONFIG CODES
+      </button>
+      <div class="mbadge" id="badge-v1">Extracted with <span id="model-v1"></span></div>
+      <div class="err hide" id="err-v1"></div>
     </div>
 
-    <div class="crows" id="crows"></div>
-
-    <button class="btn btn-dl" onclick="downloadImg()">⬇ DOWNLOAD AS IMAGE</button>
-
-    <div class="howto">
-      <span style="color:var(--g)">TWO OPTIONS: </span>
-      Click <em>Download as Image</em>, or screenshot the black box above.
-      Then upload at <span style="color:#888">https://azelux-client.github.io/config</span>
+    <!-- Manual sub-pane -->
+    <div class="pane" id="v1-mn">
+      <div class="info">
+        Type the numbers you see on screen. Don't include the <b>acx1@</b> prefix — just the digits after it.
+      </div>
+      <div class="field">
+        <label>LINE 1 — ACX1 CODE</label>
+        <div class="frow"><span class="fpfx">acx1@</span><input id="in-acx1" placeholder="e.g. 1319933993599379910480559..." /></div>
+      </div>
+      <div class="field">
+        <label>LINE 2 — ACX2 CODE</label>
+        <div class="frow"><span class="fpfx">acx2@</span><input id="in-acx2" placeholder="e.g. 011001969001508510100010..." /></div>
+      </div>
+      <div class="field">
+        <label>LINE 3 — ACX3 CODE (numbers before the QR)</label>
+        <div class="frow"><span class="fpfx">acx3@</span><input id="in-acx3" placeholder="e.g. 095011201011" /></div>
+      </div>
+      <div class="hr"></div>
+      <div class="field">
+        <label>YOUR MINECRAFT USERNAME (becomes the QR code)</label>
+        <input id="in-user" placeholder="e.g. Steve, YourIGN..." />
+        <div class="fhint">Your username is encoded into the QR on line 3</div>
+      </div>
+      <div class="err hide" id="err-mn"></div>
+      <button class="btn btn-g" onclick="generateManual()">⚡ GENERATE CONFIG IMAGE</button>
     </div>
 
-    <button class="btn btn-o" onclick="resetAll()">← START OVER</button>
+    <!-- V1 Output (shared for both ss and manual) -->
+    <div class="pane" id="v1-result">
+      <div class="v1-out-hdr">✓ READY — DOWNLOAD OR SCREENSHOT THE BOX BELOW</div>
+      <div class="clean-box" id="v1-clean-box">
+        <div class="clean-inner">
+          <span class="cl" id="o-acx1"></span>
+          <span class="cl" id="o-acx2"></span>
+          <span class="cl-qr">
+            <span id="o-acx3"></span>
+            <img id="qr-img" src="" alt="QR" crossorigin="anonymous" onerror="this.style.display='none'" />
+          </span>
+          <div class="cl-usr" id="o-usr" style="display:none"></div>
+        </div>
+      </div>
+      <div class="crows" id="crows"></div>
+      <button class="btn btn-dl" onclick="downloadV1()">⬇ DOWNLOAD AS IMAGE</button>
+      <div class="howto">
+        <span style="color:var(--g)">HOW TO USE: </span>
+        Download or screenshot the box above, then upload at
+        <span style="color:#888">https://azelux-client.github.io/config</span>
+      </div>
+      <button class="btn btn-o" onclick="resetV1()">← START OVER</button>
+    </div>
+
   </div>
 
 </div>
-<p class="ftr">AZELUX CONFIG TOOL · FREE VISION MODEL FALLBACKS</p>
+<p class="ftr">AZELUX CONFIG TOOL · GROQ AI · LLAMA 4</p>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
   integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
@@ -303,184 +341,277 @@
 
 <script>
 // ─── State ────────────────────────────────────────────────────────────────────
-let imgB64 = null, imgType = null;
+let v2B64 = null, v2Type = null;
+let v1B64 = null, v1Type = null;
+let v2QrContent = null; // decoded QR data string
 
-// ─── Mode switch ──────────────────────────────────────────────────────────────
-function switchMode(m) {
-  ['ss','mn'].forEach(id => {
-    document.getElementById(`tab-${id}`).classList.toggle('on', id === m);
-    document.getElementById(`pane-${id}`).classList.toggle('on', id === m);
+// ─── Version switch ────────────────────────────────────────────────────────────
+function switchVersion(v) {
+  ['v2','v1'].forEach(id => {
+    document.getElementById(`vtab-${id}`).classList.toggle('on', id === v);
+    document.getElementById(`pane-${id}`).classList.toggle('on', id === v);
   });
-  document.getElementById('pane-out').classList.remove('on');
 }
 
-// ─── File upload / drag-drop ──────────────────────────────────────────────────
-const dz     = document.getElementById('dz');
-const fileIn = document.getElementById('file-in');
-const extBtn = document.getElementById('ext-btn');
+// ─── V1 inner mode switch ──────────────────────────────────────────────────────
+function switchV1Mode(m) {
+  ['ss','mn'].forEach(id => {
+    document.getElementById(`mtab-${id}`).classList.toggle('on', id === m);
+    document.getElementById(`v1-${id}`).classList.toggle('on', id === m);
+  });
+  document.getElementById('v1-result').classList.remove('on');
+}
 
-dz.addEventListener('click', () => fileIn.click());
-['dragenter','dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('over'); }));
-['dragleave','drop'].forEach(e =>    dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('over'); }));
-dz.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f?.type.startsWith('image/')) loadFile(f); });
-fileIn.addEventListener('change', () => { if (fileIn.files[0]) loadFile(fileIn.files[0]); });
+// ─── Generic file loader ───────────────────────────────────────────────────────
+function setupDz(dzId, fileId, btnId, stateSet) {
+  const dz   = document.getElementById(dzId);
+  const fi   = document.getElementById(fileId);
+  const btn  = document.getElementById(btnId);
 
-function loadFile(file) {
+  dz.addEventListener('click', () => fi.click());
+  ['dragenter','dragover'].forEach(e => dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.add('over'); }));
+  ['dragleave','drop'].forEach(e =>    dz.addEventListener(e, ev => { ev.preventDefault(); dz.classList.remove('over'); }));
+  dz.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f?.type.startsWith('image/')) loadFile(f, dz, btn, stateSet); });
+  fi.addEventListener('change', () => { if (fi.files[0]) loadFile(fi.files[0], dz, btn, stateSet); });
+}
+
+function loadFile(file, dz, btn, stateSet) {
   const reader = new FileReader();
   reader.onload = ev => {
     const src = ev.target.result;
-    imgB64   = src.split(',')[1];
-    imgType  = file.type || 'image/jpeg';
+    stateSet(src.split(',')[1], file.type || 'image/jpeg');
     dz.classList.add('has');
     dz.innerHTML = `<img src="${src}" alt="preview" /><div class="dz-chg">CLICK TO CHANGE</div>`;
-    extBtn.style.display = 'block';
-    hide('ss-err');
-    document.getElementById('model-badge').classList.remove('show');
+    btn.style.display = 'block';
   };
   reader.readAsDataURL(file);
 }
 
-// ─── Extract via serverless function ─────────────────────────────────────────
-const STATUS_STAGES = [
-  [0,    'Racing configured free vision models...'],
-  [4000, 'Still waiting — models may be under load...'],
-  [8000, 'Almost there — at least one model is still trying...'],
+setupDz('dz-v2', 'file-v2', 'btn-v2', (b64, type) => { v2B64 = b64; v2Type = type; hide('err-v2'); document.getElementById('badge-v2').classList.remove('show'); });
+setupDz('dz-v1', 'file-v1', 'btn-v1', (b64, type) => { v1B64 = b64; v1Type = type; hide('err-v1'); document.getElementById('badge-v1').classList.remove('show'); });
+
+// ─── Call /api/extract ─────────────────────────────────────────────────────────
+async function callApi(imageBase64, imageType, mode) {
+  const res  = await fetch('/api/extract', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ imageBase64, imageType, mode }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+  return data;
+}
+
+// ─── V2: decode QR from screenshot ────────────────────────────────────────────
+const V2_STAGES = [
+  [0,    'Racing 4 AI models to decode your QR...'],
+  [4000, 'Still decoding — models may be busy...'],
+  [8000, 'Almost there...'],
 ];
 
-async function extractCodes() {
-  if (!imgB64) return;
-
-  setLoading(true);
-  hide('ss-err');
-
-  // Client-side status ticker (mirrors server-side model chain timing)
-  const statusTxt = document.getElementById('status-txt');
-  const timers = STATUS_STAGES.slice(1).map(([ms, msg]) =>
-    setTimeout(() => { statusTxt.textContent = msg; }, ms)
-  );
+async function extractV2() {
+  if (!v2B64) return;
+  setBusy('btn-v2', true, '▓▓▓ DECODING QR<span class="dots"><span>.</span><span>.</span><span>.</span></span>');
+  showSbar('sbar-v2', 'stxt-v2', V2_STAGES);
+  hide('err-v2');
 
   try {
-    const res  = await fetch('/api/extract', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ imageBase64: imgB64, imageType: imgType }),
-    });
+    const data = await callApi(v2B64, v2Type, 'qr');
+    stopSbar('sbar-v2');
 
-    timers.forEach(clearTimeout);
-    const data = await res.json();
+    v2QrContent = data.qrContent;
+    document.getElementById('model-v2').textContent = `${data.model} · ${data.ms}ms`;
+    document.getElementById('badge-v2').classList.add('show');
 
-    if (!res.ok) throw new Error(data.error || data.hint || `Server error ${res.status}`);
-
-    // Show which model was used
-    const badge = document.getElementById('model-badge');
-    const name  = document.getElementById('model-name');
-    name.textContent = data.wasFallback
-      ? `${data.model} (fallback · ${data.ms}ms)`
-      : `${data.model} · ${data.ms}ms`;
-    badge.classList.add('show');
-
-    showOutput(data.codes, '');
+    await renderV2Canvas(v2QrContent);
+    document.getElementById('v2-result').classList.add('on');
 
   } catch (err) {
-    timers.forEach(clearTimeout);
-    showErr('ss-err', `⚠ ${err.message}`);
+    stopSbar('sbar-v2');
+    showErr('err-v2', `⚠ ${err.message}`);
   }
-
-  setLoading(false);
+  setBusy('btn-v2', false, '⚡ DECODE &amp; FIX QR CODE');
 }
 
-function setLoading(on) {
-  extBtn.disabled = on;
-  extBtn.innerHTML = on
-    ? '▓▓▓ READING CODES<span class="dots"><span>.</span><span>.</span><span>.</span></span>'
-    : '⚡ EXTRACT CONFIG CODES';
-  document.getElementById('status-bar').classList.toggle('show', on);
-  if (on) document.getElementById('status-txt').textContent = STATUS_STAGES[0][1];
+// ─── Render the azelux.net-ready QR canvas ────────────────────────────────────
+// Matches the exact format: black bg, large QR, "UPLOAD THIS IMAGE TO AZELUX.NET"
+async function renderV2Canvas(qrData) {
+  const canvas = document.getElementById('qr-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W = 400, H = 460;
+  canvas.width  = W;
+  canvas.height = H;
 
+  // Black background
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  // Load QR image from api.qrserver.com
+  const qrSize   = 300;
+  const qrX      = (W - qrSize) / 2;
+  const qrY      = 30;
+  const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=6&format=png`;
+
+  await new Promise((resolve, reject) => {
+    const img   = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload  = () => { ctx.drawImage(img, qrX, qrY, qrSize, qrSize); resolve(); };
+    img.onerror = () => {
+      // Fallback: draw a placeholder box
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth   = 2;
+      ctx.strokeRect(qrX, qrY, qrSize, qrSize);
+      ctx.fillStyle   = '#555';
+      ctx.font        = '14px Courier New';
+      ctx.textAlign   = 'center';
+      ctx.fillText('QR generation failed', W/2, qrY + qrSize/2);
+      resolve();
+    };
+    img.src = qrImgUrl;
+  });
+
+  // "UPLOAD THIS IMAGE TO AZELUX.NET" text — Minecraft-style pixel font simulation
+  ctx.fillStyle   = '#fff';
+  ctx.font        = 'bold 18px "Courier New", Courier, monospace';
+  ctx.textAlign   = 'center';
+  ctx.letterSpacing = '2px';
+  ctx.fillText('UPLOAD THIS IMAGE TO AZELUX.NET', W / 2, qrY + qrSize + 46);
 }
 
-// ─── Manual generate ──────────────────────────────────────────────────────────
+// ─── Download V2 canvas ────────────────────────────────────────────────────────
+function downloadV2() {
+  const canvas = document.getElementById('qr-canvas');
+  const a = document.createElement('a');
+  a.download = 'azelux-config-v2.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// ─── Reset V2 ─────────────────────────────────────────────────────────────────
+function resetV2() {
+  v2B64 = v2Type = v2QrContent = null;
+  resetDz('dz-v2', 'file-v2', 'btn-v2',
+    '📷',
+    'Upload your in-game "SAVE YOUR CONFIG" screenshot',
+    'The screen showing the QR code — Step 3/3');
+  hide('err-v2');
+  document.getElementById('badge-v2').classList.remove('show');
+  document.getElementById('v2-result').classList.remove('on');
+}
+
+// ─── V1: extract codes from screenshot ────────────────────────────────────────
+const V1_STAGES = [
+  [0,    'Racing 4 AI models simultaneously...'],
+  [4000, 'Still reading — models may be busy...'],
+  [8000, 'Almost there...'],
+];
+
+async function extractV1() {
+  if (!v1B64) return;
+  setBusy('btn-v1', true, '▓▓▓ READING CODES<span class="dots"><span>.</span><span>.</span><span>.</span></span>');
+  showSbar('sbar-v1', 'stxt-v1', V1_STAGES);
+  hide('err-v1');
+
+  try {
+    const data = await callApi(v1B64, v1Type, 'codes');
+    stopSbar('sbar-v1');
+    document.getElementById('model-v1').textContent = `${data.model} · ${data.ms}ms`;
+    document.getElementById('badge-v1').classList.add('show');
+    showV1Output(data.codes, '');
+  } catch (err) {
+    stopSbar('sbar-v1');
+    showErr('err-v1', `⚠ ${err.message}`);
+  }
+  setBusy('btn-v1', false, '⚡ EXTRACT CONFIG CODES');
+}
+
+// ─── V1: manual generate ──────────────────────────────────────────────────────
 function generateManual() {
-  const acx1 = document.getElementById('in-acx1').value.trim().replace(/^acx1@/i, '');
-  const acx2 = document.getElementById('in-acx2').value.trim().replace(/^acx2@/i, '');
-  const acx3 = document.getElementById('in-acx3').value.trim().replace(/^acx3@/i, '').split('@')[0];
+  const acx1 = document.getElementById('in-acx1').value.trim().replace(/^acx1@/i,'');
+  const acx2 = document.getElementById('in-acx2').value.trim().replace(/^acx2@/i,'');
+  const acx3 = document.getElementById('in-acx3').value.trim().replace(/^acx3@/i,'').split('@')[0];
   const user = document.getElementById('in-user').value.trim();
-
-  if (!acx1 || !acx2 || !acx3) { showErr('mn-err', '⚠ Fill in all three code lines before generating.'); return; }
-  if (!user)                     { showErr('mn-err', "⚠ Enter your Minecraft username — it's used to generate the QR code."); return; }
-  hide('mn-err');
-  showOutput({ acx1, acx2, acx3 }, user);
+  if (!acx1||!acx2||!acx3) { showErr('err-mn','⚠ Fill in all three code lines.'); return; }
+  if (!user)                { showErr('err-mn',"⚠ Enter your Minecraft username."); return; }
+  hide('err-mn');
+  showV1Output({acx1,acx2,acx3}, user);
 }
 
-// ─── Render output ────────────────────────────────────────────────────────────
-function showOutput(codes, username) {
+// ─── V1: render output box ────────────────────────────────────────────────────
+function showV1Output(codes, username) {
   document.getElementById('o-acx1').textContent = `acx1@${codes.acx1}`;
   document.getElementById('o-acx2').textContent = `acx2@${codes.acx2}`;
   document.getElementById('o-acx3').textContent = `acx3@${codes.acx3}@`;
-
   const qrData = username || `acx3@${codes.acx3}`;
-  const qr = document.getElementById('qr-img');
-  qr.src = `https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=4`;
-  qr.style.display = '';
+  const qrEl   = document.getElementById('qr-img');
+  qrEl.src     = `https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=4`;
+  qrEl.style.display = '';
+  const usrEl  = document.getElementById('o-usr');
+  if (username) { usrEl.textContent = `Username: ${username}`; usrEl.style.display='block'; }
+  else            usrEl.style.display='none';
 
-  const usrEl = document.getElementById('o-usr');
-  if (username) { usrEl.textContent = `Username: ${username}`; usrEl.style.display = 'block'; }
-  else          { usrEl.style.display = 'none'; }
-
-  document.getElementById('crows').innerHTML = ['acx1','acx2','acx3'].map(k => `
+  document.getElementById('crows').innerHTML = ['acx1','acx2','acx3'].map(k=>`
     <div class="crow">
       <span class="ckey">${k}@</span>
       <span class="cval">${codes[k]}</span>
       <button class="cbtn" id="cb-${k}" onclick="doCopy('${k}','${codes[k]}')">COPY</button>
     </div>`).join('');
 
-  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
-  document.getElementById('pane-out').classList.add('on');
+  document.getElementById('v1-result').classList.add('on');
 }
 
-// ─── Copy ─────────────────────────────────────────────────────────────────────
 function doCopy(k, v) {
-  navigator.clipboard.writeText(`${k}@${v}`).catch(() => {});
-  const btn = document.getElementById(`cb-${k}`);
-  btn.textContent = '✓ COPIED'; btn.classList.add('ok');
-  setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('ok'); }, 1800);
+  navigator.clipboard.writeText(`${k}@${v}`).catch(()=>{});
+  const b = document.getElementById(`cb-${k}`);
+  b.textContent='✓ COPIED'; b.classList.add('ok');
+  setTimeout(()=>{ b.textContent='COPY'; b.classList.remove('ok'); },1800);
 }
 
-// ─── Download ─────────────────────────────────────────────────────────────────
-async function downloadImg() {
-  if (typeof html2canvas === 'undefined') { alert('Screenshot the black box manually.'); return; }
+async function downloadV1() {
+  if (typeof html2canvas==='undefined') { alert('Screenshot the black box manually.'); return; }
   try {
-    const canvas = await html2canvas(document.getElementById('clean-box'), {
-      backgroundColor: '#000000', scale: 2, useCORS: true, logging: false,
-    });
+    const c = await html2canvas(document.getElementById('v1-clean-box'),{backgroundColor:'#000000',scale:2,useCORS:true,logging:false});
     const a = document.createElement('a');
-    a.download = 'azelux-config.png';
-    a.href = canvas.toDataURL('image/png');
-    a.click();
-  } catch { alert('Download failed — screenshot the black box manually instead.'); }
+    a.download='azelux-config-v1.png'; a.href=c.toDataURL('image/png'); a.click();
+  } catch { alert('Download failed — screenshot manually instead.'); }
 }
 
-// ─── Reset ────────────────────────────────────────────────────────────────────
-function resetAll() {
-  imgB64 = imgType = null;
-  dz.classList.remove('has','over');
-  dz.innerHTML = `
-    <div class="dz-ico">📸</div>
-    <div class="dz-txt">Click or drag &amp; drop your Azelux config screenshot</div>
-    <div class="dz-sub">Dark screenshots &amp; Minecraft font are fine — AI reads them</div>`;
-  extBtn.style.display = 'none';
-  fileIn.value = '';
-  ['acx1','acx2','acx3','user'].forEach(id => {
-    const el = document.getElementById(`in-${id}`); if (el) el.value = '';
-  });
-  document.getElementById('model-badge').classList.remove('show');
-  hide('ss-err'); hide('mn-err');
-  switchMode('ss');
+function resetV1() {
+  v1B64=v1Type=null;
+  resetDz('dz-v1','file-v1','btn-v1','📸','Upload your Azelux V1 config screenshot','Shows acx1@ / acx2@ / acx3@ code lines — dark or Minecraft font is fine');
+  ['acx1','acx2','acx3','user'].forEach(id=>{ const el=document.getElementById(`in-${id}`); if(el) el.value=''; });
+  hide('err-v1'); hide('err-mn');
+  document.getElementById('badge-v1').classList.remove('show');
+  document.getElementById('v1-result').classList.remove('on');
+  switchV1Mode('ss');
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function showErr(id, msg) { const el = document.getElementById(id); el.innerHTML = msg; el.classList.remove('hide'); }
+let sbarTimers = {};
+
+function showSbar(sbarId, txtId, stages) {
+  document.getElementById(sbarId).classList.add('show');
+  document.getElementById(txtId).textContent = stages[0][1];
+  sbarTimers[sbarId] = stages.slice(1).map(([ms,msg])=>
+    setTimeout(()=>{ document.getElementById(txtId).textContent=msg; }, ms)
+  );
+}
+function stopSbar(sbarId) {
+  document.getElementById(sbarId).classList.remove('show');
+  (sbarTimers[sbarId]||[]).forEach(clearTimeout);
+}
+function setBusy(id, on, lbl) {
+  const b=document.getElementById(id); b.disabled=on; b.innerHTML=lbl;
+}
+function showErr(id, msg) { const e=document.getElementById(id); e.innerHTML=msg; e.classList.remove('hide'); }
 function hide(id)         { document.getElementById(id).classList.add('hide'); }
+function resetDz(dzId, fileId, btnId, ico, txt, sub) {
+  const dz=document.getElementById(dzId);
+  dz.classList.remove('has','over');
+  dz.innerHTML=`<div class="dz-ico">${ico}</div><div class="dz-txt">${txt}</div><div class="dz-sub">${sub}</div>`;
+  document.getElementById(fileId).value='';
+  document.getElementById(btnId).style.display='none';
+}
 </script>
 </body>
 </html>
