@@ -410,27 +410,58 @@ async function callApi(imageBase64, imageType, mode) {
   return data;
 }
 
-// ─── jsQR: decode QR directly from image pixels (no AI needed) ────────────────
+// ─── jsQR: decode QR from image with preprocessing ────────────────────────────
+// Converts to grayscale + threshold so the purple game background becomes plain
+// black/white, making the QR readable every time.
 function decodeQrFromDataUrl(dataUrl) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      // Draw image onto a scratch canvas to get pixel data
-      const sc  = document.createElement('canvas');
-      sc.width  = img.naturalWidth;
-      sc.height = img.naturalHeight;
+      // Downscale to max 800px wide to speed up pixel processing
+      const MAXW = 800;
+      const scale = img.naturalWidth > MAXW ? MAXW / img.naturalWidth : 1;
+      const w = Math.round(img.naturalWidth  * scale);
+      const h = Math.round(img.naturalHeight * scale);
+
+      const sc   = document.createElement('canvas');
+      sc.width   = w;
+      sc.height  = h;
       const sctx = sc.getContext('2d');
-      sctx.drawImage(img, 0, 0);
-      const { data, width, height } = sctx.getImageData(0, 0, sc.width, sc.height);
-      const result = jsQR(data, width, height, { inversionAttempts: 'dontInvert' });
-      if (result && result.data) {
-        resolve(result.data);
-      } else {
-        // Try with inverted colors (some QR codes)
-        const result2 = jsQR(data, width, height, { inversionAttempts: 'onlyInvert' });
-        if (result2 && result2.data) resolve(result2.data);
-        else reject(new Error('QR not found in image'));
+      sctx.drawImage(img, 0, 0, w, h);
+
+      const imgData = sctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+
+      // Pass 1: try raw (no preprocessing)
+      let result = jsQR(d, w, h, { inversionAttempts: 'attemptBoth' });
+      if (result?.data) { resolve(result.data); return; }
+
+      // Pass 2: grayscale + threshold — neutralises the purple game background
+      for (let i = 0; i < d.length; i += 4) {
+        const gray = d[i]*0.299 + d[i+1]*0.587 + d[i+2]*0.114;
+        const val  = gray > 127 ? 255 : 0;
+        d[i] = d[i+1] = d[i+2] = val;
+        // alpha stays 255
       }
+      sctx.putImageData(imgData, 0, 0);
+      const d2 = sctx.getImageData(0, 0, w, h).data;
+      result = jsQR(d2, w, h, { inversionAttempts: 'attemptBoth' });
+      if (result?.data) { resolve(result.data); return; }
+
+      // Pass 3: try at 2× upscale of the original (helps low-res QRs)
+      const sc2 = document.createElement('canvas');
+      sc2.width  = w * 2; sc2.height = h * 2;
+      const s2   = sc2.getContext('2d');
+      s2.drawImage(img, 0, 0, sc2.width, sc2.height);
+      const d3 = s2.getImageData(0, 0, sc2.width, sc2.height).data;
+      for (let i = 0; i < d3.length; i += 4) {
+        const g = d3[i]*0.299 + d3[i+1]*0.587 + d3[i+2]*0.114;
+        d3[i] = d3[i+1] = d3[i+2] = g > 127 ? 255 : 0;
+      }
+      result = jsQR(d3, sc2.width, sc2.height, { inversionAttempts: 'attemptBoth' });
+      if (result?.data) { resolve(result.data); return; }
+
+      reject(new Error('jsQR: QR not found — trying AI'));
     };
     img.onerror = () => reject(new Error('Could not load image'));
     img.src = dataUrl;
@@ -450,28 +481,36 @@ async function extractV2() {
   showSbar('sbar-v2', 'stxt-v2', V2_STAGES);
   hide('err-v2');
 
+  // Hard 25-second timeout — never hangs forever
+  const HARD_TIMEOUT = new Promise((_, rej) =>
+    setTimeout(() => rej(new Error('Timed out after 25s. Try a clearer screenshot with just the QR visible.')), 25000)
+  );
+
   try {
     let qrContent, method;
 
-    // 1️⃣ Try jsQR (pixel-perfect, no AI, instant)
-    if (typeof jsQR !== 'undefined') {
-      try {
-        document.getElementById('stxt-v2').textContent = 'Scanning QR code from your screenshot...';
-        qrContent = await decodeQrFromDataUrl('data:' + v2Type + ';base64,' + v2B64);
-        method = 'jsQR (instant)';
-      } catch (_) {
-        // jsQR failed → fall through to AI
-        document.getElementById('stxt-v2').textContent = 'jsQR could not find QR — trying AI...';
-      }
-    }
+    await Promise.race([
+      (async () => {
+        // 1️⃣ Try jsQR first (client-side, instant, no network)
+        if (typeof jsQR !== 'undefined') {
+          try {
+            document.getElementById('stxt-v2').textContent = 'Scanning QR pixels...';
+            qrContent = await decodeQrFromDataUrl('data:' + v2Type + ';base64,' + v2B64);
+            method = '⚡ jsQR — instant';
+          } catch (_) {
+            document.getElementById('stxt-v2').textContent = 'Pixel scan failed — trying AI (up to 15s)...';
+          }
+        }
 
-    // 2️⃣ AI fallback (if jsQR failed)
-    if (!qrContent) {
-      document.getElementById('stxt-v2').textContent = 'Racing 4 AI models to decode QR...';
-      const data = await callApi(v2B64, v2Type, 'qr');
-      qrContent = data.qrContent;
-      method = `AI: ${data.model} · ${data.ms}ms`;
-    }
+        // 2️⃣ AI fallback only if jsQR found nothing
+        if (!qrContent) {
+          const data = await callApi(v2B64, v2Type, 'qr');
+          qrContent = data.qrContent;
+          method = `AI: ${data.model} · ${data.ms}ms`;
+        }
+      })(),
+      HARD_TIMEOUT,
+    ]);
 
     stopSbar('sbar-v2');
     v2QrContent = qrContent;
@@ -483,7 +522,7 @@ async function extractV2() {
 
   } catch (err) {
     stopSbar('sbar-v2');
-    showErr('err-v2', `⚠ ${err.message}<br><small style="color:#883333">Tip: make sure the full QR code is visible and not cut off in your screenshot.</small>`);
+    showErr('err-v2', `⚠ ${err.message}<br><small style="color:#883333">Tip: screenshot just the QR — crop out game UI if possible.</small>`);
   }
   setBusy('btn-v2', false, '⚡ DECODE &amp; FIX QR CODE');
 }
