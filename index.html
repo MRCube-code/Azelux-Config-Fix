@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Azelux Config Tool</title>
+  <!-- Press Start 2P = Minecraft pixel font for the QR output image -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     :root {
       --g:  #39FF14;
@@ -104,8 +108,8 @@
     .v2-out { text-align: center; }
     .v2-out-hdr { color: var(--g); font-size: 11px; letter-spacing: 2px; margin-bottom: 14px; }
     /* The canvas that mirrors the exact azelux.net-ready format */
-    #qr-canvas { display: block; margin: 0 auto 18px; border-radius: 4px; max-width: 100%; }
-    .canvas-wrap { background: #000; border: 1px solid #111; border-radius: 8px; padding: 20px; margin-bottom: 18px; display: inline-block; }
+    #qr-canvas { display: block; margin: 0 auto 18px; border-radius: 4px; max-width: 100%; height: auto; }
+    .canvas-wrap { background: #000; border: 1px solid #111; border-radius: 8px; padding: 10px; margin-bottom: 18px; display: block; width: 100%; }
 
     /* ── V1 manual inputs ── */
     .field { margin-bottom: 16px; }
@@ -338,6 +342,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
   integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA=="
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- jsQR: proper QR decoder — reads actual QR data from the image pixel-by-pixel -->
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 
 <script>
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -402,11 +408,38 @@ async function callApi(imageBase64, imageType, mode) {
   return data;
 }
 
-// ─── V2: decode QR from screenshot ────────────────────────────────────────────
+// ─── jsQR: decode QR directly from image pixels (no AI needed) ────────────────
+function decodeQrFromDataUrl(dataUrl) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // Draw image onto a scratch canvas to get pixel data
+      const sc  = document.createElement('canvas');
+      sc.width  = img.naturalWidth;
+      sc.height = img.naturalHeight;
+      const sctx = sc.getContext('2d');
+      sctx.drawImage(img, 0, 0);
+      const { data, width, height } = sctx.getImageData(0, 0, sc.width, sc.height);
+      const result = jsQR(data, width, height, { inversionAttempts: 'dontInvert' });
+      if (result && result.data) {
+        resolve(result.data);
+      } else {
+        // Try with inverted colors (some QR codes)
+        const result2 = jsQR(data, width, height, { inversionAttempts: 'onlyInvert' });
+        if (result2 && result2.data) resolve(result2.data);
+        else reject(new Error('QR not found in image'));
+      }
+    };
+    img.onerror = () => reject(new Error('Could not load image'));
+    img.src = dataUrl;
+  });
+}
+
+// ─── V2: decode QR — jsQR first, AI fallback ──────────────────────────────────
 const V2_STAGES = [
-  [0,    'Racing 4 AI models to decode your QR...'],
-  [4000, 'Still decoding — models may be busy...'],
-  [8000, 'Almost there...'],
+  [0,    'Scanning QR code from your screenshot...'],
+  [3000, 'Trying AI fallback — models racing...'],
+  [7000, 'Almost there...'],
 ];
 
 async function extractV2() {
@@ -416,11 +449,31 @@ async function extractV2() {
   hide('err-v2');
 
   try {
-    const data = await callApi(v2B64, v2Type, 'qr');
-    stopSbar('sbar-v2');
+    let qrContent, method;
 
-    v2QrContent = data.qrContent;
-    document.getElementById('model-v2').textContent = `${data.model} · ${data.ms}ms`;
+    // 1️⃣ Try jsQR (pixel-perfect, no AI, instant)
+    if (typeof jsQR !== 'undefined') {
+      try {
+        document.getElementById('stxt-v2').textContent = 'Scanning QR code from your screenshot...';
+        qrContent = await decodeQrFromDataUrl('data:' + v2Type + ';base64,' + v2B64);
+        method = 'jsQR (instant)';
+      } catch (_) {
+        // jsQR failed → fall through to AI
+        document.getElementById('stxt-v2').textContent = 'jsQR could not find QR — trying AI...';
+      }
+    }
+
+    // 2️⃣ AI fallback (if jsQR failed)
+    if (!qrContent) {
+      document.getElementById('stxt-v2').textContent = 'Racing 4 AI models to decode QR...';
+      const data = await callApi(v2B64, v2Type, 'qr');
+      qrContent = data.qrContent;
+      method = `AI: ${data.model} · ${data.ms}ms`;
+    }
+
+    stopSbar('sbar-v2');
+    v2QrContent = qrContent;
+    document.getElementById('model-v2').textContent = method;
     document.getElementById('badge-v2').classList.add('show');
 
     await renderV2Canvas(v2QrContent);
@@ -428,54 +481,65 @@ async function extractV2() {
 
   } catch (err) {
     stopSbar('sbar-v2');
-    showErr('err-v2', `⚠ ${err.message}`);
+    showErr('err-v2', `⚠ ${err.message}<br><small style="color:#883333">Tip: make sure the full QR code is visible and not cut off in your screenshot.</small>`);
   }
   setBusy('btn-v2', false, '⚡ DECODE &amp; FIX QR CODE');
 }
 
 // ─── Render the azelux.net-ready QR canvas ────────────────────────────────────
-// Matches the exact format: black bg, large QR, "UPLOAD THIS IMAGE TO AZELUX.NET"
+// Matches image 1 exactly: wide 1366×768 landscape, large QR centered,
+// "UPLOAD THIS IMAGE TO AZELUX.NET" in Minecraft pixel font at bottom
 async function renderV2Canvas(qrData) {
   const canvas = document.getElementById('qr-canvas');
   const ctx    = canvas.getContext('2d');
-  const W = 400, H = 460;
+
+  // Match the exact dimensions azelux uses (wide landscape format)
+  const W = 1366, H = 768;
   canvas.width  = W;
   canvas.height = H;
+  canvas.style.maxWidth  = '100%';
+  canvas.style.height    = 'auto';
 
-  // Black background
-  ctx.fillStyle = '#000';
+  // Pure black background
+  ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
 
-  // Load QR image from api.qrserver.com
-  const qrSize   = 300;
-  const qrX      = (W - qrSize) / 2;
-  const qrY      = 30;
-  const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=6&format=png`;
+  // QR code: large, centered, with enough size to hold the full config data
+  // Use 600px QR for the data; api.qrserver.com will auto-pick density
+  const qrPx  = 580;
+  const qrX   = (W - qrPx) / 2;
+  const qrY   = (H - qrPx) / 2 - 40; // slightly above center to leave room for text
 
-  await new Promise((resolve, reject) => {
-    const img   = new Image();
+  // Request the largest QR possible (1000px internally, drawn at qrPx)
+  const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=10&ecc=M&format=png`;
+
+  await new Promise(resolve => {
+    const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload  = () => { ctx.drawImage(img, qrX, qrY, qrSize, qrSize); resolve(); };
+    img.onload  = () => { ctx.drawImage(img, qrX, qrY, qrPx, qrPx); resolve(); };
     img.onerror = () => {
-      // Fallback: draw a placeholder box
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth   = 2;
-      ctx.strokeRect(qrX, qrY, qrSize, qrSize);
-      ctx.fillStyle   = '#555';
-      ctx.font        = '14px Courier New';
-      ctx.textAlign   = 'center';
-      ctx.fillText('QR generation failed', W/2, qrY + qrSize/2);
+      // Fallback: white box with error text
+      ctx.fillStyle = '#111';
+      ctx.fillRect(qrX, qrY, qrPx, qrPx);
+      ctx.fillStyle = '#fff';
+      ctx.font = '20px Courier New';
+      ctx.textAlign = 'center';
+      ctx.fillText('QR generation failed', W/2, qrY + qrPx/2);
       resolve();
     };
     img.src = qrImgUrl;
   });
 
-  // "UPLOAD THIS IMAGE TO AZELUX.NET" text — Minecraft-style pixel font simulation
-  ctx.fillStyle   = '#fff';
-  ctx.font        = 'bold 18px "Courier New", Courier, monospace';
-  ctx.textAlign   = 'center';
-  ctx.letterSpacing = '2px';
-  ctx.fillText('UPLOAD THIS IMAGE TO AZELUX.NET', W / 2, qrY + qrSize + 46);
+  // "UPLOAD THIS IMAGE TO AZELUX.NET"
+  // Minecraft pixel font — wait for Press Start 2P to be loaded before drawing
+  const textY = qrY + qrPx + 68;
+  try { await document.fonts.load('32px "Press Start 2P"'); } catch(_){}
+
+  ctx.fillStyle    = '#ffffff';
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font         = '32px "Press Start 2P", "Courier New", monospace';
+  ctx.fillText('UPLOAD THIS IMAGE TO AZELUX.NET', W / 2, textY);
 }
 
 // ─── Download V2 canvas ────────────────────────────────────────────────────────
