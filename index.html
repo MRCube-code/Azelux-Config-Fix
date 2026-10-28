@@ -344,6 +344,8 @@
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <!-- jsQR: proper QR decoder — reads actual QR data from the image pixel-by-pixel -->
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<!-- qrcode: client-side QR generator — no external HTTP call, instant -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <script>
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -487,58 +489,53 @@ async function extractV2() {
 }
 
 // ─── Render the azelux.net-ready QR canvas ────────────────────────────────────
-// Matches image 1 exactly: wide 1366×768 landscape, large QR centered,
-// "UPLOAD THIS IMAGE TO AZELUX.NET" in Minecraft pixel font at bottom
+// All client-side — no HTTP calls. Instant.
+// Output matches image 1: wide 1366×768, large QR centered, pixel font text.
 async function renderV2Canvas(qrData) {
   const canvas = document.getElementById('qr-canvas');
   const ctx    = canvas.getContext('2d');
 
-  // Match the exact dimensions azelux uses (wide landscape format)
   const W = 1366, H = 768;
   canvas.width  = W;
   canvas.height = H;
-  canvas.style.maxWidth  = '100%';
-  canvas.style.height    = 'auto';
+  canvas.style.maxWidth = '100%';
+  canvas.style.height   = 'auto';
 
   // Pure black background
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, W, H);
 
-  // QR code: large, centered, with enough size to hold the full config data
-  // Use 600px QR for the data; api.qrserver.com will auto-pick density
-  const qrPx  = 580;
-  const qrX   = (W - qrPx) / 2;
-  const qrY   = (H - qrPx) / 2 - 40; // slightly above center to leave room for text
+  // ── Step 1: generate QR into a temp off-screen canvas via qrcode library ──
+  const qrPx = 600;
+  const qrX  = (W - qrPx) / 2;
+  const qrY  = (H - qrPx) / 2 - 50;
 
-  // Request the largest QR possible (1000px internally, drawn at qrPx)
-  const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(qrData)}&bgcolor=000000&color=ffffff&margin=10&ecc=M&format=png`;
-
-  await new Promise(resolve => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload  = () => { ctx.drawImage(img, qrX, qrY, qrPx, qrPx); resolve(); };
-    img.onerror = () => {
-      // Fallback: white box with error text
-      ctx.fillStyle = '#111';
-      ctx.fillRect(qrX, qrY, qrPx, qrPx);
-      ctx.fillStyle = '#fff';
-      ctx.font = '20px Courier New';
-      ctx.textAlign = 'center';
-      ctx.fillText('QR generation failed', W/2, qrY + qrPx/2);
-      resolve();
-    };
-    img.src = qrImgUrl;
+  const tmpCanvas = document.createElement('canvas');
+  await new Promise((resolve, reject) => {
+    QRCode.toCanvas(tmpCanvas, qrData, {
+      width:          qrPx,
+      margin:         2,
+      color: { dark: '#ffffff', light: '#000000' },
+      errorCorrectionLevel: 'M',
+    }, err => { if (err) reject(err); else resolve(); });
   });
+  ctx.drawImage(tmpCanvas, qrX, qrY, qrPx, qrPx);
 
-  // "UPLOAD THIS IMAGE TO AZELUX.NET"
-  // Minecraft pixel font — wait for Press Start 2P to be loaded before drawing
-  const textY = qrY + qrPx + 68;
-  try { await document.fonts.load('32px "Press Start 2P"'); } catch(_){}
+  // ── Step 2: "UPLOAD THIS IMAGE TO AZELUX.NET" in Minecraft pixel font ──
+  const textY = qrY + qrPx + 62;
+
+  // Wait up to 1.5s for Press Start 2P; fall back to Courier New immediately
+  try {
+    await Promise.race([
+      document.fonts.load('28px "Press Start 2P"'),
+      new Promise(r => setTimeout(r, 1500)),
+    ]);
+  } catch(_){}
 
   ctx.fillStyle    = '#ffffff';
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
-  ctx.font         = '32px "Press Start 2P", "Courier New", monospace';
+  ctx.font         = '28px "Press Start 2P", "Courier New", monospace';
   ctx.fillText('UPLOAD THIS IMAGE TO AZELUX.NET', W / 2, textY);
 }
 
